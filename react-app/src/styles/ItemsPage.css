@@ -1,0 +1,253 @@
+.items-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background-color: #ffffff;
+  color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.branding-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.branding-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.branding-header .tagline {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.search-container {
+  margin-bottom: 40px;
+}
+
+.search-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.search-input:focus {
+  border: 1px solid #4a90e2;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2);
+  outline: none;
+}
+
+.items-list {
+  margin-top: 40px;
+}
+
+.items-list h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.branding-footer {
+  margin-top: 60px;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+}
+
+
+.branding-header .description {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #555;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 120px 14px 16px; /* extra right padding for the badge */
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:disabled {
+  background-color: #f3f3f3;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: #ddd;
+}
+
+.search-status {
+  margin-top: 12px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.query-metrics {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.query-metrics-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.query-metrics-title {
+  font-weight: 600;
+}
+
+.query-metrics-total {
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.query-metrics-error {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: #a83a3a;
+  font-weight: 600;
+}
+
+.retry-button {
+  margin-top: 8px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  border: none;
+  background-color: #4a90e2;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.retry-button:not(:disabled):hover {
+  background-color: #3b78bd;
+  transform: translateY(-1px);
+}
+
+.retry-button:disabled {
+  background-color: #9fbde4;
+  cursor: not-allowed;
+}
+
+.powered-by {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #444;
+  background: linear-gradient(145deg, #f4f4f4, #eaeaea);
+  border-radius: 20px;
+  padding: 4px 12px 4px 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.powered-by:hover {
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.inferedge-logo {
+  height: 20px;
+  width: 20px;
+  margin: 0 6px;
+  display: inline-block;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.image-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.image-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+}
+
+.image-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.image-meta {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.image-meta h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: #222;
+}
+
+.image-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-tag {
+  background-color: #eef5ff;
+  color: #3165d4;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.image-photographer,
+.image-score {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .items-page {
+    padding: 32px 16px;
+  }
+
+  .image-grid {
+    gap: 16px;
+  }
+}
