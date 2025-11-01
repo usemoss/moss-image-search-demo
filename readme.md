@@ -7,6 +7,9 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 
 **Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
 
+> Image search - preview
+> <img width="2234" height="1626" alt="Image" src="https://github.com/user-attachments/assets/9dd4290d-aa9d-456d-a5b6-59eb378d27d6" />
+
 ## 1. Go to Moss Portal and Get API Keys
 
 - Visit [portal.usemoss.dev](https://portal.usemoss.dev/auth/login) to create an account, confirm your email, and sign in.
@@ -48,5 +51,3 @@ A sample React app is included in the `react-app` folder that demonstrates how t
 4. Create a `.env` file in the `react-app` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
    - Prefix environment variables with `VITE_`.
 5. Run `npm run dev` to start the development server.
-
-> <img width="2234" height="1626" alt="Image" src="https://github.com/user-attachments/assets/9dd4290d-aa9d-456d-a5b6-59eb378d27d6" />
