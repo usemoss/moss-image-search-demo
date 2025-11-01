@@ -39,7 +39,7 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 5. Create a virtual environment using uv: `uv venv`.(optional)
 6. Activate the virtual environment(optional):
    - On Windows: `.\venv\Scripts\activate`
-   - On macOS/Linux: `source venv/bin/activate`
+   - On macOS/Linux: `source .venv/bin/activate`
 7. Run `uv sync` to install dependencies.
 8. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID`,`MOSS_PROJECT_KEY` and `MOSS_INDEX_NAME` values.
 9. Run `python create_index.py` to create the index.
