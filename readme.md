@@ -7,18 +7,16 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 
 **Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
 
-## Go to Moss Portal and Get API Keys
+## 1. Go to Moss Portal and Get API Keys
 
 - Visit [portal.usemoss.dev](https://portal.usemoss.dev/auth/login) to create an account, confirm your email, and sign in.
 - From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples either in the setup-js or the setup-py folders.
 
 > ![Moss Portal walkthrough](https://github.com/user-attachments/assets/c3db9d2d-0df5-4cec-99fd-7d49d0a30844)
 
-## Setup Instructions
+## 2. Setup - Upload data and create index
 
 Go into either the `setup-js` or `setup-py` folder and follow the instructions.
-
-## Setup
 
 ### Setup JS
 
@@ -39,7 +37,7 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 6. Run `python create_index.py` to create the index.
 7. Run `python query.py` to load the index and run the sample query.
 
-## React App
+## 3. React App powered by Moss
 
 A sample React app is included in the `react-app` folder that demonstrates how to integrate Moss for semantic search in the image search application.
 
