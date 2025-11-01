@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { QueryResultDocumentInfo } from "@inferedge/moss";
 import {
@@ -30,6 +30,21 @@ type IndexState = {
   error: string | null;
 };
 
+const SAMPLE_QUERIES: string[] = [
+  "dancing at a wedding reception",
+  "woman in a leather jacket",
+  "Chinatown street glowing with lanterns",
+  "moss-covered boulders along a forest river",
+  "vintage green steam locomotive in motion",
+  "dog wearing a hat indoors",
+  "cozy wood-paneled bedroom with fireplace",
+  "bar cart stocked with vodka, whiskey, and tonic bottles",
+  "cartoon witch against a full moon",
+  "dressage rider on a grey horse during competition",
+  "coastal harbor town with boats and palm trees",
+  "watercolor coronavirus illustration with teal spikes",
+];
+
 const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | null => {
   const metadata = (record.metadata || {}) as Record<string, string>;
   const url = typeof metadata.url === "string" ? metadata.url : undefined;
@@ -60,6 +75,7 @@ const ImageSearchPage = () => {
       error: error ? error.message : null,
     };
   });
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const trimmedTerm = searchTerm.trim();
   const hasQuery = trimmedTerm.length > 0;
 
@@ -159,6 +175,14 @@ const ImageSearchPage = () => {
 
   const searchDisabled = !indexState.loaded || Boolean(indexState.error);
 
+  const handleSampleQueryClick = (query: string) => {
+    setSearchTerm(query);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+      searchInputRef.current.select();
+    }
+  };
+
   const handleRetryInitialization = async () => {
     if (indexState.loading) {
       return;
@@ -194,6 +218,7 @@ const ImageSearchPage = () => {
             onChange={(event: ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)}
             className="search-input"
             disabled={searchDisabled}
+            ref={searchInputRef}
           />
           <div className="powered-by">
             <span>Powered by</span>
@@ -207,6 +232,24 @@ const ImageSearchPage = () => {
         </div>
         {indexState.loading && !indexState.loaded && !indexState.error && (
           <p className="search-status">Loading the on-device index…</p>
+        )}
+        {SAMPLE_QUERIES.length > 0 && (
+          <div className="sample-queries">
+            <p className="sample-queries-label"> Or sample queries</p>
+            <div className="sample-queries-list">
+              {SAMPLE_QUERIES.map((query) => (
+                <button
+                  key={query}
+                  type="button"
+                  className="sample-query-button"
+                  onClick={() => handleSampleQueryClick(query)}
+                  disabled={searchDisabled}
+                >
+                  {query}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {indexState.error && (
           <div className="query-metrics">
