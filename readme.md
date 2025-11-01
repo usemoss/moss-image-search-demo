@@ -7,7 +7,7 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 
 **Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
 
-## Go to Moss Portal and Getting API Keys
+## Go to Moss Portal and Get API Keys
 
 - Visit [portal.usemoss.dev](https://portal.usemoss.dev/auth/login) to create an account, confirm your email, and sign in.
 - From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples either in the setup-js or the setup-py folders.

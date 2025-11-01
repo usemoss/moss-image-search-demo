@@ -32,7 +32,6 @@ type IndexState = {
 
 const SAMPLE_QUERIES: string[] = [
   "dancing at a wedding reception",
-  "woman in a leather jacket",
   "moss-covered boulders along a forest river",
   "vintage green steam locomotive in motion",
   "dog wearing a hat indoors",
@@ -41,7 +40,6 @@ const SAMPLE_QUERIES: string[] = [
   "cartoon witch against a full moon",
   "dressage rider on a grey horse during competition",
   "coastal harbor town with boats and palm trees",
-  "watercolor coronavirus illustration with teal spikes",
 ];
 
 const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | null => {
