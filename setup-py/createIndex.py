@@ -1,6 +1,6 @@
-"""Utility script to create or refresh the Moss FAQ index.
+"""Utility script to create or refresh the Moss Image index.
 
-Reads FAQ documents from ``faqs.json`` in this directory and uploads them to the Moss service
+Reads image documents from ``image-data-1k.json`` in this directory and uploads them to the Moss service
 using credentials defined in ``.env``.
 """
 
@@ -18,21 +18,21 @@ from inferedge_moss import DocumentInfo, MossClient
 # Load environment variables from the project .env file
 load_dotenv(".env")
 
-FAQ_PATH = Path(__file__).resolve().parent / "../image-data-1k.json"
+IMAGE_PATH = Path(__file__).resolve().parent / "../image-data-1k.json"
 DEFAULT_MODEL_ID = "moss-minilm"
 
 
-def _load_faq_documents() -> List[DocumentInfo]:
-    if not FAQ_PATH.exists():
+def _load_image_documents() -> List[DocumentInfo]:
+    if not IMAGE_PATH.exists():
         raise FileNotFoundError(
-            f"FAQ data file not found at {FAQ_PATH}. Ensure the moss-sdk samples are present."
+            f"Image data file not found at {IMAGE_PATH}. Ensure the moss-sdk samples are present."
         )
 
-    with FAQ_PATH.open("r", encoding="utf-8") as handle:
+    with IMAGE_PATH.open("r", encoding="utf-8") as handle:
         data = json.load(handle)
 
     if not isinstance(data, list):
-        raise ValueError("FAQ data must be a list of document entries.")
+        raise ValueError("Image data must be a list of document entries.")
 
     documents: List[DocumentInfo] = []
     for entry in data:
@@ -55,12 +55,12 @@ def _load_faq_documents() -> List[DocumentInfo]:
         )
 
     if not documents:
-        raise ValueError("No valid FAQ documents were loaded from the JSON file.")
+        raise ValueError("No valid image documents were loaded from the JSON file.")
 
     return documents
 
 
-async def create_faq_index() -> None:
+async def create_image_index() -> None:
     project_id = os.getenv("MOSS_PROJECT_ID")
     project_key = os.getenv("MOSS_PROJECT_KEY")
     index_name = os.getenv("MOSS_INDEX_NAME")
@@ -80,15 +80,15 @@ async def create_faq_index() -> None:
             "Missing required Moss environment variables: " + ", ".join(missing)
         )
 
-    documents = _load_faq_documents()
+    documents = _load_image_documents()
 
     client = MossClient(project_id, project_key)
 
-    print(f"Creating Moss index '{index_name}' with {len(documents)} FAQ entries using {model_id}...")
+    print(f"Creating Moss index '{index_name}' with {len(documents)} image entries using {model_id}...")
     created = await client.create_index(index_name, documents, model_id)
     print("Index creation response:", created)
-    print("FAQ index ready for use!")
+    print("Image index ready for use!")
 
 
 if __name__ == "__main__":
-    asyncio.run(create_faq_index())
+    asyncio.run(create_image_index())
