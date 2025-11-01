@@ -7,16 +7,45 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 
 **Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
 
-## Using Moss Portal and Getting API Keys
+## Go to Moss Portal and Getting API Keys
 
 - Visit [portal.usemoss.dev](https://portal.usemoss.dev/auth/login) to create an account, confirm your email, and sign in.
-- Inside the default project you will see two plans:
-  - Free Tier ($0) offers 1 project, 3 indexes, and 1,000 items per index with community support;
-  - Developer Workspace ($2000/month + usage) adds unlimited projects/indexes plus 100 GB storage, 100 GB ingestion, 1 TB egress, and priority support.
-- Enter valid card details to start the free trial, then select **Create Index** to provision a new index.
-- From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples.
+- From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples either in the setup-js or the setup-py folders.
 
 > ![Moss Portal walkthrough](https://github.com/user-attachments/assets/c3db9d2d-0df5-4cec-99fd-7d49d0a30844)
 
+## Setup Instructions
 
-## Quick Python Docs
+Go into either the `setup-js` or `setup-py` folder and follow the instructions.
+
+## Setup
+
+### Setup JS
+
+1. Navigate to the `setup-js` folder.
+2. Install Node.js and npm.
+3. Run `npm install` to install dependencies. `npm install -g npx` to install npx globally if not already installed.
+4. Create a `.env` file in the `setup-js` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
+5. "npx tsx createIndex.ts" to create the index.
+6. "npx tsx query.ts" to load the index and run the sample query.
+
+### Setup Python
+
+1. Navigate to the `setup-py` folder.
+2. Install Python 3.8+ and pip.
+3. (Optional) Create and activate a virtual environment.
+4. Run `pip install -r requirements.txt` to install dependencies.
+5. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
+6. Run `python create_index.py` to create the index.
+7. Run `python query.py` to load the index and run the sample query.
+
+## React App
+
+A sample React app is included in the `react-app` folder that demonstrates how to integrate Moss for semantic search in the image search application.
+
+1. Navigate to the `react-app` folder.
+2. Install Node.js and npm.
+3. Run `npm install` to install dependencies.
+4. Create a `.env` file in the `react-app` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
+   - Prefix environment variables with `VITE_`.
+5. Run `npm run dev` to start the development server.
