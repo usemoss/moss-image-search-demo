@@ -1,11 +1,14 @@
 <!-- markdownlint-disable-next-line MD033 -->
-# <img src="https://github.com/user-attachments/assets/c4e39933-40c4-462d-a9a3-135458c6705f" alt="Moss logo" width="48" style="vertical-align: middle; margin-right: 8px;" /> Moss Samples
+# <img src="https://github.com/user-attachments/assets/c4e39933-40c4-462d-a9a3-135458c6705f" alt="Moss logo" width="48" style="vertical-align: middle; margin-right: 8px;" /> Moss Hackathon Project - Image Search
 
 Moss is a high-performance runtime for real-time semantic search. It delivers sub-10 ms lookups, instant index updates, and zero infra overhead. Moss runs where your agent lives - cloud, in-browser, or on-device - so search feels native and users never wait. You connect your data once; Moss handles indexing, packaging, distribution and updates.
 
 This repo bundles thin, working examples that show how to talk to Moss from Python and JavaScript. Each sample keeps the scaffolding light so you can copy the essentials straight into your own projects.
 
 **Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
+
+> Image search - preview
+> <img width="2234" height="1626" alt="Image" src="https://github.com/user-attachments/assets/9dd4290d-aa9d-456d-a5b6-59eb378d27d6" />
 
 ## 1. Go to Moss Portal and Get API Keys
 
