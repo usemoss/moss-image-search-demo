@@ -32,12 +32,13 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 ### Setup Python
 
 1. Navigate to the `setup-py` folder.
-2. Install Python 3.8+ and pip.
+2. Install Python 3.9+ and uv.
 3. (Optional) Create and activate a virtual environment.
-4. Run `pip install -r requirements.txt` to install dependencies.
-5. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
-6. Run `python create_index.py` to create the index.
-7. Run `python query.py` to load the index and run the sample query.
+4. Install uv if not already installed: `pip install uv`.
+5. Run `uv sync` to install dependencies.
+6. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID`,`MOSS_PROJECT_KEY` and `MOSS_INDEX_NAME` values.
+7. Run `python create_index.py` to create the index.
+8. Run `python query.py` to load the index and run the sample query.
 
 ## React App
 
