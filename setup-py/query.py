@@ -20,7 +20,7 @@ def _require_env(name: str) -> str:
 
 
 async def load_and_query_sample() -> None:
-	"""Load an existing FAQ index and execute a sample query."""
+	"""Load an existing image index and execute a sample query."""
 
 	load_dotenv()
 
