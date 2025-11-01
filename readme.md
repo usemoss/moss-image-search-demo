@@ -33,10 +33,14 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 2. Install Python 3.9+ and uv.
 3. (Optional) Create and activate a virtual environment.
 4. Install uv if not already installed: `pip install uv`.
-5. Run `uv sync` to install dependencies.
-6. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID`,`MOSS_PROJECT_KEY` and `MOSS_INDEX_NAME` values.
-7. Run `python create_index.py` to create the index.
-8. Run `python query.py` to load the index and run the sample query.
+5. Create a virtual environment using uv: `uv venv`.(optional)
+6. Activate the virtual environment(optional):
+   - On Windows: `.\venv\Scripts\activate`
+   - On macOS/Linux: `source venv/bin/activate`
+7. Run `uv sync` to install dependencies.
+8. Create a `.env` file in the `setup-py` folder and add your `MOSS_PROJECT_ID`,`MOSS_PROJECT_KEY` and `MOSS_INDEX_NAME` values.
+9. Run `python create_index.py` to create the index.
+10. Run `python query.py` to load the index and run the sample query.
 
 ## 3. React App powered by Moss
 
