@@ -33,7 +33,6 @@ type IndexState = {
 const SAMPLE_QUERIES: string[] = [
   "dancing at a wedding reception",
   "woman in a leather jacket",
-  "Chinatown street glowing with lanterns",
   "moss-covered boulders along a forest river",
   "vintage green steam locomotive in motion",
   "dog wearing a hat indoors",
