@@ -1,5 +1,5 @@
 <!-- markdownlint-disable-next-line MD033 -->
-# <img src="https://github.com/user-attachments/assets/c4e39933-40c4-462d-a9a3-135458c6705f" alt="Moss logo" width="48" style="vertical-align: middle; margin-right: 8px;" /> Moss Hackathon Project - Image Search
+# <img src="https://github.com/user-attachments/assets/c4e39933-40c4-462d-a9a3-135458c6705f" alt="Moss logo" width="48" style="vertical-align: middle; margin-right: 8px;" /> Moss Demo Project - Image Search
 
 Moss is a high-performance runtime for real-time semantic search. It delivers sub-10 ms lookups, instant index updates, and zero infra overhead. Moss runs where your agent lives - cloud, in-browser, or on-device - so search feels native and users never wait. You connect your data once; Moss handles indexing, packaging, distribution and updates.
 
@@ -12,7 +12,7 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 
 ## 1. Go to Moss Portal and Get API Keys
 
-- Visit [portal.usemoss.dev](https://portal.usemoss.dev/auth/login) to create an account, confirm your email, and sign in.
+- Visit [usemoss.dev](https://usemoss.dev/) to sign up, create an account, confirm your email, and sign in.
 - From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples either in the setup-js or the setup-py folders.
 
 > ![Moss Portal walkthrough](https://github.com/user-attachments/assets/c3db9d2d-0df5-4cec-99fd-7d49d0a30844)
