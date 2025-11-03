@@ -5,9 +5,7 @@ Moss is a high-performance runtime for real-time semantic search. It delivers su
 
 This repo bundles thin, working examples that show how to talk to Moss from Python and JavaScript. Each sample keeps the scaffolding light so you can copy the essentials straight into your own projects.
 
-**Join our [discord server](https://discord.gg/Z9TGpJWF) to get onboarded!**
-
-> Image search - preview
+> **Try out the live deployment of this sample project at https://moss-image-search-demo.vercel.app/**
 > <img width="2234" height="1626" alt="Image" src="https://github.com/user-attachments/assets/9dd4290d-aa9d-456d-a5b6-59eb378d27d6" />
 
 ## 1. Go to Moss Portal and Get API Keys
