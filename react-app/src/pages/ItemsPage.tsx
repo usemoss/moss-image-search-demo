@@ -85,7 +85,7 @@ const ImageSearchPage = () => {
       error: error ? error.message : null,
     };
   });
-  const [searchMode, setSearchMode] = useState<SearchMode>("js");
+  const [searchMode, setSearchMode] = useState<SearchMode>("python");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -331,18 +331,18 @@ const ImageSearchPage = () => {
               <span className="sdk-toggle-label">SDK:</span>
               <button
                 type="button"
-                className={`sdk-toggle-btn${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
-                onClick={() => handleModeChange("js")}
-              >
-                JS
-              </button>
-              <span className="sdk-toggle-divider">|</span>
-              <button
-                type="button"
                 className={`sdk-toggle-btn${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
                 onClick={() => handleModeChange("python")}
               >
                 Python
+              </button>
+              <span className="sdk-toggle-divider">|</span>
+              <button
+                type="button"
+                className={`sdk-toggle-btn${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
+                onClick={() => handleModeChange("js")}
+              >
+                JS
               </button>
             </div>
 
