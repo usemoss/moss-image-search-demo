@@ -427,6 +427,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 24px 20px 60px;
+  box-sizing: border-box;
 }
 
 /* ========== Sample Queries ========== */
@@ -799,7 +800,7 @@
   }
 
   .masonry-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
   }
 
