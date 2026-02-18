@@ -18,7 +18,6 @@ export const TIERS: readonly TierInfo[] = [
     { value: "10k", label: "10K images", docCount: "10,000" },
     { value: "50k", label: "50K images", docCount: "50,000" },
     { value: "100k", label: "100K images", docCount: "100,000" },
-    { value: "123k", label: "123K images", docCount: "123,000" },
 ];
 
 const TOP_K = 5;
