@@ -44,6 +44,14 @@
   overflow: hidden;
 }
 
+.hero-header-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Subtle radial green glow behind title */
 .hero-header::before {
   content: '';
@@ -66,11 +74,6 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
-}
-
-.hero-header > * {
-  position: relative;
-  z-index: 1;
 }
 
 .hero-logo {
@@ -97,6 +100,7 @@
   font-weight: 400;
   animation: fade-up-blur 0.8s ease-out 0.15s both;
 }
+
 
 /* ========== Search Section ========== */
 .search-section {
@@ -191,12 +195,59 @@
   display: inline-block;
 }
 
+/* ========== SDK Toggle ========== */
+.sdk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sdk-toggle-label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.sdk-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sdk-toggle-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+
+/* Python — blue */
+.sdk-toggle-btn--python.sdk-toggle-btn--active {
+  border-color: #5b9bd5;
+  color: #5b9bd5;
+  background-color: rgba(91, 155, 213, 0.1);
+}
+
+/* JS — yellow */
+.sdk-toggle-btn--js.sdk-toggle-btn--active {
+  border-color: #e8d44d;
+  color: #e8d44d;
+  background-color: rgba(232, 212, 77, 0.1);
+}
+
 /* ========== Controls Row ========== */
 .controls-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: 12px;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -240,57 +291,98 @@
   box-shadow: 0 0 0 3px var(--accent-green-dim);
 }
 
-/* ========== Speed Badge ========== */
-.speed-badge {
-  display: inline-flex;
+/* ========== Top-K Selector ========== */
+.topk-selector {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  background: transparent;
-  border-left: 3px solid var(--accent-green);
-  transition: color 0.3s;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-.speed-badge--green {
+.topk-selector label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.topk-input {
+  width: 52px;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+
+.topk-input::-webkit-inner-spin-button,
+.topk-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.topk-input:hover {
+  border-color: var(--border-hover);
+}
+
+.topk-input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--accent-green-dim);
+}
+
+/* ========== Speed Badge (Hero) ========== */
+.speed-badge-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px auto 0;
+  padding: 8px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   color: var(--accent-green);
 }
 
-.speed-badge--yellow {
-  color: var(--accent-amber);
-  border-left-color: var(--accent-amber);
-}
-
-.speed-badge--red {
-  color: var(--accent-red);
-  border-left-color: var(--accent-red);
-}
-
-.speed-badge-dot {
+.speed-badge-hero .speed-badge-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
-}
-
-.speed-badge--green .speed-badge-dot {
   background-color: var(--accent-green);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-.speed-badge--yellow .speed-badge-dot {
-  background-color: var(--accent-amber);
-  animation: pulse-dot 2s ease-in-out infinite;
+.speed-badge-hero .speed-badge-value {
+  font-size: 1.3rem;
+  font-weight: 700;
 }
 
-.speed-badge--red .speed-badge-dot {
+.speed-badge-hero .speed-badge-label {
+  font-size: 0.85rem;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.speed-badge-hero.speed-badge--yellow {
+  color: var(--accent-amber);
+}
+
+.speed-badge-hero.speed-badge--yellow .speed-badge-dot {
+  background-color: var(--accent-amber);
+}
+
+.speed-badge-hero.speed-badge--red {
+  color: var(--accent-red);
+}
+
+.speed-badge-hero.speed-badge--red .speed-badge-dot {
   background-color: var(--accent-red);
-  animation: pulse-dot 2s ease-in-out infinite;
 }
 
 /* ========== Content Area ========== */
@@ -307,13 +399,33 @@
   border-top: 1px solid var(--border-subtle);
 }
 
-.sample-queries-label {
+.sample-queries-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 10px;
+  padding: 0;
+  background: transparent;
+  border: none;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.sample-queries-toggle:hover {
+  color: var(--text-secondary);
+}
+
+.chevron {
+  transition: transform 0.2s;
+}
+
+.chevron--open {
+  transform: rotate(180deg);
 }
 
 .sample-queries-list {
@@ -360,6 +472,31 @@
   border-color: var(--accent-green);
   background-color: var(--accent-green-dim);
   color: var(--accent-green);
+}
+
+/* ========== Welcome State ========== */
+.welcome-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.welcome-state svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.3;
+}
+
+.welcome-state h3 {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 16px 0 8px;
+}
+
+.welcome-state p {
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 /* ========== Status Messages ========== */
@@ -574,25 +711,30 @@
 /* ========== Results Header ========== */
 .results-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-top: 32px;
   margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .results-header h2 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-style: italic;
-  font-size: 1.4rem;
-  font-weight: 400;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-style: normal;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .results-count {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
+  background: var(--bg-elevated);
+  border-radius: 999px;
+  padding: 2px 10px;
 }
 
 /* ========== Responsive ========== */
@@ -636,51 +778,10 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-}
 
-/* ========== SDK Toggle ========== */
-.sdk-toggle {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.85rem;
-}
-
-.sdk-toggle-label {
-  color: var(--text-muted);
-  font-weight: 500;
-  margin-right: 2px;
-  white-space: nowrap;
-}
-
-.sdk-toggle-btn {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 4px 10px;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.sdk-toggle-btn:hover {
-  border-color: var(--border-hover);
-  color: var(--text-secondary);
-}
-
-.sdk-toggle-btn--active {
-  border-color: var(--accent-green);
-  color: var(--accent-green);
-  background-color: var(--accent-green-dim);
-}
-
-.sdk-toggle-divider {
-  color: var(--border-subtle);
-  font-size: 0.75rem;
-  user-select: none;
+  .speed-badge-hero .speed-badge-value {
+    font-size: 1.1rem;
+  }
 }
 
 @media (max-width: 480px) {

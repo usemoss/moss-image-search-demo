@@ -145,7 +145,7 @@ export const checkPythonApiHealth = async (): Promise<boolean> => {
     }
 };
 
-export const searchImages = async (term: string): Promise<SearchImagesResponse> => {
+export const searchImages = async (term: string, topK = TOP_K): Promise<SearchImagesResponse> => {
     await initializeSearchIndex();
 
     const trimmedTerm = term.trim();
@@ -160,7 +160,7 @@ export const searchImages = async (term: string): Promise<SearchImagesResponse> 
         const result: SearchResult = await mossClient.query(
             indexName,
             queryTerm,
-            TOP_K
+            topK
         );
         const docs: QueryResultDocumentInfo[] = (result.docs ?? []).map((doc) => ({
             ...doc,

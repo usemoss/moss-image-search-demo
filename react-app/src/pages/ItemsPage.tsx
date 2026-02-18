@@ -86,6 +86,9 @@ const ImageSearchPage = () => {
     };
   });
   const [searchMode, setSearchMode] = useState<SearchMode>("python");
+  const [topK, setTopK] = useState(5);
+  const [topKInput, setTopKInput] = useState("5");
+  const [showSamples, setShowSamples] = useState(true);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -166,8 +169,8 @@ const ImageSearchPage = () => {
       try {
         const { results, timeTakenInMs, status, errorMessage } =
           searchMode === "python"
-            ? await searchImagesViaPythonApi(trimmedTerm, selectedTier)
-            : await searchImages(trimmedTerm);
+            ? await searchImagesViaPythonApi(trimmedTerm, selectedTier, topK)
+            : await searchImages(trimmedTerm, topK);
         if (!isCancelled) {
           setSearchResults(results);
           setQueryMetadata({ timeTakenInMs, status, errorMessage });
@@ -194,7 +197,7 @@ const ImageSearchPage = () => {
     return () => {
       isCancelled = true;
     };
-  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded, searchMode, selectedTier]);
+  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded, searchMode, selectedTier, topK]);
 
   const galleryItems = useMemo(() => {
     if (!hasQuery) return [];
@@ -204,7 +207,7 @@ const ImageSearchPage = () => {
   }, [hasQuery, searchResults]);
 
   const queryMetrics =
-    !isSearching && hasQuery && indexState.loaded ? queryMetadata : null;
+    hasQuery && indexState.loaded && queryMetadata ? queryMetadata : null;
 
   const emptyState =
     indexState.loaded && hasQuery && !isSearching && galleryItems.length === 0;
@@ -272,15 +275,19 @@ const ImageSearchPage = () => {
     <div className="items-page">
       {/* Dark gradient hero header */}
       <header className="hero-header">
-        <img
-          src="/images/InferEdgeLogo_Dark_Icon.png"
-          alt="Moss"
-          className="hero-logo"
-        />
-        <h1>Moss Image Search</h1>
-        <p className="hero-tagline">
-          Sub-10ms semantic search across {tierInfo.docCount} images
-        </p>
+        <div className="hero-header-inner">
+          <img
+            src="/images/InferEdgeLogo_Dark_Icon.png"
+            alt="Moss"
+            className="hero-logo"
+          />
+          <div className="hero-text">
+            <h1>Moss Image Search</h1>
+            <p className="hero-tagline">
+              Sub-10ms semantic search across {tierInfo.docCount} images
+            </p>
+          </div>
+        </div>
       </header>
 
       {/* Elevated search section overlapping header */}
@@ -307,7 +314,7 @@ const ImageSearchPage = () => {
             </div>
           </div>
 
-          {/* Controls: tier selector + sdk toggle + speed badge */}
+          {/* Controls: tier selector + sdk toggle */}
           <div className="controls-row">
             <div className="tier-selector">
               <label htmlFor="tier-select">Index size:</label>
@@ -327,63 +334,107 @@ const ImageSearchPage = () => {
               </select>
             </div>
 
+            <div className="topk-selector">
+              <label htmlFor="topk-input">Results:</label>
+              <input
+                id="topk-input"
+                type="number"
+                className="topk-input"
+                value={topKInput}
+                onChange={(e) => setTopKInput(e.target.value)}
+                onBlur={() => {
+                  const v = Math.max(1, Math.min(50, Number(topKInput) || 1));
+                  setTopK(v);
+                  setTopKInput(String(v));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
+                min={1}
+                max={50}
+              />
+            </div>
+
             <div className="sdk-toggle">
               <span className="sdk-toggle-label">SDK:</span>
               <button
                 type="button"
-                className={`sdk-toggle-btn${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
+                className={`sdk-toggle-btn sdk-toggle-btn--python${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
                 onClick={() => handleModeChange("python")}
               >
                 Python
               </button>
-              <span className="sdk-toggle-divider">|</span>
               <button
                 type="button"
-                className={`sdk-toggle-btn${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
+                className={`sdk-toggle-btn sdk-toggle-btn--js${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
                 onClick={() => handleModeChange("js")}
               >
                 JS
               </button>
             </div>
-
-            {queryMetrics && queryMetrics.status === "fulfilled" ? (
-              <div className={`speed-badge ${getSpeedBadgeClass(queryMetrics.timeTakenInMs)}`}>
-                <span className="speed-badge-dot" />
-                <span>{Math.round(queryMetrics.timeTakenInMs)}ms</span>
-                <span style={{ fontWeight: 400, opacity: 0.7 }}>query time</span>
-              </div>
-            ) : indexState.loaded && !queryMetrics ? (
-              <div className="speed-badge speed-badge--green">
-                <span className="speed-badge-dot" />
-                <span>&lt; 10ms</span>
-                <span style={{ fontWeight: 400, opacity: 0.7 }}>typical query time</span>
-              </div>
-            ) : null}
           </div>
 
           {/* Sample queries */}
           {SAMPLE_QUERIES.length > 0 && (
             <div className="sample-queries">
-              <p className="sample-queries-label">Try a sample query</p>
-              <div className="sample-queries-list">
-                {SAMPLE_QUERIES.map((query, index) => (
-                  <button
-                    key={query}
-                    type="button"
-                    className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => handleSampleQueryClick(query)}
-                    disabled={searchDisabled}
-                    data-testid={`sample-query-${index}`}
-                  >
-                    {query}
-                  </button>
-                ))}
-              </div>
+              <button
+                type="button"
+                className="sample-queries-toggle"
+                onClick={() => setShowSamples(!showSamples)}
+              >
+                <span>Try a sample query</span>
+                <svg
+                  className={`chevron${showSamples ? ' chevron--open' : ''}`}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="2,4 6,8 10,4" />
+                </svg>
+              </button>
+              {showSamples && (
+                <div className="sample-queries-list">
+                  {SAMPLE_QUERIES.map((query, index) => (
+                    <button
+                      key={query}
+                      type="button"
+                      className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                      onClick={() => handleSampleQueryClick(query)}
+                      disabled={searchDisabled}
+                      data-testid={`sample-query-${index}`}
+                    >
+                      {query}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Speed badge — prominent standalone */}
+      {queryMetrics && queryMetrics.status === "fulfilled" ? (
+        <div className={`speed-badge-hero ${getSpeedBadgeClass(queryMetrics.timeTakenInMs)}`}>
+          <span className="speed-badge-dot" />
+          <span className="speed-badge-value">{Math.round(queryMetrics.timeTakenInMs)}ms</span>
+          <span className="speed-badge-label">query time</span>
+        </div>
+      ) : indexState.loaded && !queryMetrics ? (
+        <div className="speed-badge-hero speed-badge--green">
+          <span className="speed-badge-dot" />
+          <span className="speed-badge-value">&lt; 10ms</span>
+          <span className="speed-badge-label">typical query time</span>
+        </div>
+      ) : null}
 
       {/* Main content */}
       <div className="content-area">
@@ -423,8 +474,17 @@ const ImageSearchPage = () => {
         )}
         {isSearching && <p className="search-status">Searching...</p>}
         {emptyState && <p className="search-status">No images match that description. Clear search or try a sample query above.</p>}
+
+        {/* Welcome state */}
         {!hasQuery && !isSearching && indexState.loaded && !indexState.error && (
-          <p className="search-status">Clear search or try a sample query above.</p>
+          <div className="welcome-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <h3>Search for anything</h3>
+            <p>Describe what you're looking for in natural language</p>
+          </div>
         )}
 
         {/* Query error */}
