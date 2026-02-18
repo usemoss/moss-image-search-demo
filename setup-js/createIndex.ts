@@ -1,7 +1,7 @@
 /**
  * Creates a Moss index from a tiered COCO dataset JSON file.
  *
- * Set MOSS_INDEX_TIER in .env to choose the tier (1k, 10k, 50k, 100k, 123k).
+ * Set MOSS_INDEX_TIER in .env to choose the tier (1k, 10k, 50k, 100k).
  * The index name will be "${MOSS_INDEX_NAME}-${tier}".
  */
 
@@ -12,7 +12,7 @@ import { config } from "dotenv";
 
 config();
 
-const VALID_TIERS = ["1k", "10k", "50k", "100k", "123k"] as const;
+const VALID_TIERS = ["1k", "10k", "50k", "100k"] as const;
 type Tier = (typeof VALID_TIERS)[number];
 
 function getDataFilePath(tier: Tier): string {

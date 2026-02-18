@@ -1,6 +1,6 @@
 """Creates a Moss index from a tiered COCO dataset JSON file.
 
-Set MOSS_INDEX_TIER in .env to choose the tier (1k, 10k, 50k, 100k, 123k).
+Set MOSS_INDEX_TIER in .env to choose the tier (1k, 10k, 50k, 100k).
 The index name will be "${MOSS_INDEX_NAME}-${tier}".
 """
 
@@ -17,7 +17,7 @@ from inferedge_moss import DocumentInfo, MossClient
 
 load_dotenv(".env")
 
-VALID_TIERS = ("1k", "10k", "50k", "100k", "123k")
+VALID_TIERS = ("1k", "10k", "50k", "100k")
 DEFAULT_MODEL_ID = "moss-minilm"
 ROOT_DIR = Path(__file__).resolve().parent.parent
 

@@ -6,7 +6,7 @@
  *
  * Output files (gitignored):
  *   coco-data-1k.json, coco-data-10k.json, coco-data-50k.json,
- *   coco-data-100k.json, coco-data-123k.json
+ *   coco-data-100k.json
  */
 
 import * as fs from "fs";
@@ -26,7 +26,6 @@ const TIERS: ReadonlyArray<{ readonly name: string; readonly size: number }> = [
   { name: "10k", size: 10_000 },
   { name: "50k", size: 50_000 },
   { name: "100k", size: 100_000 },
-  { name: "123k", size: Infinity },
 ];
 
 interface CocoCaption {

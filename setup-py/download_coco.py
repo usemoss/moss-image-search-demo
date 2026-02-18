@@ -4,7 +4,7 @@ Source: http://images.cocodataset.org/annotations/annotations_trainval2017.zip
 
 Output files (gitignored):
     coco-data-1k.json, coco-data-10k.json, coco-data-50k.json,
-    coco-data-100k.json, coco-data-123k.json
+    coco-data-100k.json
 """
 
 from __future__ import annotations
@@ -29,7 +29,6 @@ TIERS: list[tuple[str, int | None]] = [
     ("10k", 10_000),
     ("50k", 50_000),
     ("100k", 100_000),
-    ("123k", None),  # None means full dataset
 ]
 
 
