@@ -46,10 +46,7 @@ const Lightbox = ({ item, onClose, onFindSimilar }: LightboxProps) => {
     <div className="lightbox-backdrop" onClick={handleBackdropClick}>
       <div className="lightbox-content">
         <button type="button" className="lightbox-close" onClick={onClose} aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          &#x2715;
         </button>
         <img src={item.url} alt={firstCaption} className="lightbox-image" />
         <div className="lightbox-info">

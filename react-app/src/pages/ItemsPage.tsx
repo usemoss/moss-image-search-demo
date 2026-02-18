@@ -2,6 +2,8 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "
 import { QueryResultDocumentInfo } from "@inferedge/moss";
 import {
   searchImages,
+  searchImagesViaPythonApi,
+  checkPythonApiHealth,
   initializeSearchIndex,
   isSearchIndexLoaded,
   getSearchIndexLoadError,
@@ -32,6 +34,8 @@ interface IndexState {
   loading: boolean;
   error: string | null;
 }
+
+type SearchMode = "js" | "python";
 
 const SAMPLE_QUERIES: readonly string[] = [
   "a dog catching a frisbee in mid-air",
@@ -81,6 +85,7 @@ const ImageSearchPage = () => {
       error: error ? error.message : null,
     };
   });
+  const [searchMode, setSearchMode] = useState<SearchMode>("js");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -92,26 +97,42 @@ const ImageSearchPage = () => {
     let isCancelled = false;
     setIndexState((prev) => ({ ...prev, loading: true, error: null }));
 
-    initializeSearchIndex()
-      .then(() => {
+    if (searchMode === "python") {
+      checkPythonApiHealth().then((ok) => {
         if (!isCancelled) {
-          setIndexState({ loaded: true, loading: false, error: null });
-        }
-      })
-      .catch((error) => {
-        if (!isCancelled) {
-          setIndexState({
-            loaded: false,
-            loading: false,
-            error: error instanceof Error ? error.message : String(error),
-          });
+          if (ok) {
+            setIndexState({ loaded: true, loading: false, error: null });
+          } else {
+            setIndexState({
+              loaded: false,
+              loading: false,
+              error: `Python backend unreachable at ${import.meta.env.VITE_PYTHON_API_URL ?? "http://localhost:8000"}`,
+            });
+          }
         }
       });
+    } else {
+      initializeSearchIndex()
+        .then(() => {
+          if (!isCancelled) {
+            setIndexState({ loaded: true, loading: false, error: null });
+          }
+        })
+        .catch((error) => {
+          if (!isCancelled) {
+            setIndexState({
+              loaded: false,
+              loading: false,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        });
+    }
 
     return () => {
       isCancelled = true;
     };
-  }, [indexState.loaded]);
+  }, [indexState.loaded, searchMode]);
 
   // Auto-run first sample query when index loads
   useEffect(() => {
@@ -143,7 +164,10 @@ const ImageSearchPage = () => {
 
       setIsSearching(true);
       try {
-        const { results, timeTakenInMs, status, errorMessage } = await searchImages(trimmedTerm);
+        const { results, timeTakenInMs, status, errorMessage } =
+          searchMode === "python"
+            ? await searchImagesViaPythonApi(trimmedTerm, selectedTier)
+            : await searchImages(trimmedTerm);
         if (!isCancelled) {
           setSearchResults(results);
           setQueryMetadata({ timeTakenInMs, status, errorMessage });
@@ -170,7 +194,7 @@ const ImageSearchPage = () => {
     return () => {
       isCancelled = true;
     };
-  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded]);
+  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded, searchMode, selectedTier]);
 
   const galleryItems = useMemo(() => {
     if (!hasQuery) return [];
@@ -201,14 +225,26 @@ const ImageSearchPage = () => {
     setActiveSampleQuery(null);
   }, []);
 
-  const handleTierChange = useCallback(async (event: ChangeEvent<HTMLSelectElement>) => {
+  const handleModeChange = useCallback((mode: SearchMode) => {
+    setSearchMode(mode);
+    setIndexState({ loaded: false, loading: false, error: null });
+    setSearchResults([]);
+    setQueryMetadata(null);
+    hasAutoQueried.current = false;
+  }, []);
+
+  const handleTierChange = useCallback(async (event: ChangeEvent<HTMLSelectElement>, currentMode: SearchMode) => {
     const newTier = event.target.value;
     setSelectedTier(newTier);
     setTierInfo(TIERS.find((t) => t.value === newTier) ?? TIERS[0]);
-    setIndexState({ loaded: false, loading: true, error: null });
     setSearchResults([]);
     setQueryMetadata(null);
 
+    if (currentMode === "python") {
+      return;
+    }
+
+    setIndexState({ loaded: false, loading: true, error: null });
     try {
       await switchIndex(newTier);
       setIndexState({ loaded: true, loading: false, error: null });
@@ -221,21 +257,9 @@ const ImageSearchPage = () => {
     }
   }, []);
 
-  const handleRetryInitialization = useCallback(async () => {
+  const handleRetryInitialization = useCallback(() => {
     if (indexState.loading) return;
-
-    setIndexState({ loaded: false, loading: true, error: null });
-
-    try {
-      await initializeSearchIndex();
-      setIndexState({ loaded: true, loading: false, error: null });
-    } catch (error) {
-      setIndexState({
-        loaded: false,
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
+    setIndexState({ loaded: false, loading: false, error: null });
   }, [indexState.loading]);
 
   const handleLightboxFindSimilar = useCallback((caption: string) => {
@@ -283,7 +307,7 @@ const ImageSearchPage = () => {
             </div>
           </div>
 
-          {/* Controls: tier selector + speed badge */}
+          {/* Controls: tier selector + sdk toggle + speed badge */}
           <div className="controls-row">
             <div className="tier-selector">
               <label htmlFor="tier-select">Index size:</label>
@@ -291,7 +315,7 @@ const ImageSearchPage = () => {
                 id="tier-select"
                 className="tier-select"
                 value={selectedTier}
-                onChange={handleTierChange}
+                onChange={(e) => handleTierChange(e, searchMode)}
                 disabled={indexState.loading}
                 data-testid="tier-select"
               >
@@ -301,6 +325,25 @@ const ImageSearchPage = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="sdk-toggle">
+              <span className="sdk-toggle-label">SDK:</span>
+              <button
+                type="button"
+                className={`sdk-toggle-btn${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
+                onClick={() => handleModeChange("js")}
+              >
+                JS
+              </button>
+              <span className="sdk-toggle-divider">|</span>
+              <button
+                type="button"
+                className={`sdk-toggle-btn${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
+                onClick={() => handleModeChange("python")}
+              >
+                Python
+              </button>
             </div>
 
             {queryMetrics && queryMetrics.status === "fulfilled" ? (
@@ -347,7 +390,9 @@ const ImageSearchPage = () => {
         {/* Skeleton loading state */}
         {indexState.loading && !indexState.loaded && !indexState.error && (
           <>
-            <p className="search-status">Loading the on-device index...</p>
+            <p className="search-status">
+            {searchMode === "python" ? "Connecting to Python backend..." : "Loading the on-device index..."}
+          </p>
             <div className="skeleton-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="skeleton-card" />

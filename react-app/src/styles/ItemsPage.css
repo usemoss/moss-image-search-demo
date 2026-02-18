@@ -638,6 +638,51 @@
   }
 }
 
+/* ========== SDK Toggle ========== */
+.sdk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.sdk-toggle-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.sdk-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sdk-toggle-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+
+.sdk-toggle-btn--active {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  background-color: var(--accent-green-dim);
+}
+
+.sdk-toggle-divider {
+  color: var(--border-subtle);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
 @media (max-width: 480px) {
   .masonry-grid {
     columns: 1;

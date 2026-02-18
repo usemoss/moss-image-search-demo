@@ -33,6 +33,7 @@ let currentTier = "1k";
 let isIndexLoaded = false;
 let indexLoadPromise: Promise<void> | null = null;
 let indexLoadError: Error | null = null;
+const clientLoadedIndexes = new Set<string>();
 
 function getIndexName(tier: string): string {
     return `${baseIndexName}-${tier}`;
@@ -54,11 +55,18 @@ export const initializeSearchIndex = (): Promise<void> => {
     if (!indexLoadPromise) {
         indexLoadError = null;
         const indexName = getIndexName(currentTier);
+
+        if (clientLoadedIndexes.has(indexName)) {
+            isIndexLoaded = true;
+            return Promise.resolve();
+        }
+
         indexLoadPromise = mossClient
             .loadIndex(indexName)
             .then(() => {
                 isIndexLoaded = true;
                 indexLoadError = null;
+                clientLoadedIndexes.add(indexName);
             })
             .catch((error) => {
                 isIndexLoaded = false;
@@ -96,6 +104,47 @@ export const getSearchIndexLoadError = (): Error | null => indexLoadError;
 /**
  * Executes a hybrid search against the current tier's image index.
  */
+const PYTHON_API_BASE = (import.meta.env.VITE_PYTHON_API_URL as string | undefined) ?? "http://localhost:8000";
+
+export const searchImagesViaPythonApi = async (
+    term: string,
+    tier: string,
+    topK = 5
+): Promise<SearchImagesResponse> => {
+    const trimmedTerm = term.trim();
+    if (!trimmedTerm) {
+        return { results: [], timeTakenInMs: 0, status: "fulfilled" };
+    }
+
+    try {
+        const url = `${PYTHON_API_BASE}/search?query=${encodeURIComponent(trimmedTerm)}&tier=${encodeURIComponent(tier)}&top_k=${topK}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`HTTP ${response.status}: ${text}`);
+        }
+        const data = (await response.json()) as { docs: QueryResultDocumentInfo[]; timeTakenInMs: number };
+        const docs: QueryResultDocumentInfo[] = (data.docs ?? []).map((doc) => ({
+            ...doc,
+            metadata: doc.metadata ?? ({} as Record<string, string>),
+        }));
+        return { results: docs, timeTakenInMs: data.timeTakenInMs ?? 0, status: "fulfilled" };
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error("Python API search failed:", errorMessage);
+        return { results: [], timeTakenInMs: 0, status: "rejected", errorMessage };
+    }
+};
+
+export const checkPythonApiHealth = async (): Promise<boolean> => {
+    try {
+        const response = await fetch(`${PYTHON_API_BASE}/health`);
+        return response.ok;
+    } catch {
+        return false;
+    }
+};
+
 export const searchImages = async (term: string): Promise<SearchImagesResponse> => {
     await initializeSearchIndex();
 
