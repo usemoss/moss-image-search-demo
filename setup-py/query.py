@@ -1,65 +1,72 @@
-"""Simple Moss SDK sample for loading an index and running a query."""
+"""Loads a tiered Moss index and performs a sample search query.
+
+Set MOSS_INDEX_TIER in .env to choose the tier (default: 1k).
+"""
+
+from __future__ import annotations
 
 import asyncio
 import os
-from typing import Optional
 
 from dotenv import load_dotenv
 from inferedge_moss import MossClient
 
+TOP_K = 10
 
-def _require_env(name: str) -> str:
-	"""Fetch a required environment variable or raise a helpful error."""
-	value: Optional[str] = os.getenv(name)
-	if not value:
-		raise EnvironmentError(
-			f"Missing required environment variable: {name}. "
-			"Set it in your environment or .env file before running the sample."
-		)
-	return value
+SAMPLE_QUERIES = [
+    "a dog catching a frisbee in mid-air",
+    "people riding bikes down a city street",
+    "a cat sitting on a laptop keyboard",
+    "a large pizza on a wooden table",
+    "surfers riding waves at the beach",
+]
 
 
 async def load_and_query_sample() -> None:
-	"""Load an existing image index and execute a sample query."""
+    """Load an existing image index and execute a sample hybrid query."""
+    load_dotenv()
 
-	load_dotenv()
+    project_id = os.getenv("MOSS_PROJECT_ID")
+    project_key = os.getenv("MOSS_PROJECT_KEY")
+    base_index_name = os.getenv("MOSS_INDEX_NAME")
+    tier = os.getenv("MOSS_INDEX_TIER", "1k")
 
-	project_id = _require_env("MOSS_PROJECT_ID")
-	project_key = _require_env("MOSS_PROJECT_KEY")
-	index_name = _require_env("MOSS_INDEX_NAME")
+    if not project_id or not project_key or not base_index_name:
+        print("Error: Missing required environment variables!")
+        print("Set MOSS_PROJECT_ID, MOSS_PROJECT_KEY, and MOSS_INDEX_NAME in .env")
+        return
 
-	print("=" * 40)
-	print("Moss SDK - Load Index & Query Sample")
-	print("=" * 40)
-	print(f"Using index: {index_name}")
+    index_name = f"{base_index_name}-{tier}"
 
-	client = MossClient(project_id, project_key)
+    print("=" * 40)
+    print("Moss SDK - Search Query Sample")
+    print("=" * 40)
+    print(f"Using index: {index_name} (tier: {tier})")
 
-	try:
-		print("\nLoading index...")
-		await client.load_index(index_name)
-		print("Index loaded successfully")
-		print("=" * 40)
+    client = MossClient(project_id, project_key)
 
-		query = "tigers in the wild"
-		print("\nPerforming sample search...\n")
-		results = await client.query(index_name, query, 6)
+    try:
+        print("\nLoading index...")
+        await client.load_index(index_name)
+        print("Index loaded successfully")
+        print("=" * 40)
 
-		print(f"Found {len(results.docs)} results in {results.time_taken_ms}ms\n")
-		for idx, doc in enumerate(results.docs, 1):
-			print(f"[{doc.id}] Result {idx}")
-			print(f"Score: {doc.score:.3f}")
-			print(f"Snippet: {doc.text}\n")
+        query = SAMPLE_QUERIES[0]
+        print("\nPerforming search...\n")
+        results = await client.query(index_name, query, top_k=TOP_K)
 
-		print("Sample completed successfully!")
+        print(f"Found {len(results.docs)} results in {results.time_taken_ms}ms\n")
+        for idx, doc in enumerate(results.docs, 1):
+            print(f"[{doc.id}] Result {idx}")
+            print(f"Score: {doc.score:.3f}")
+            print(f"Snippet: {doc.text}\n")
 
-	except Exception as error:
-		print(f"Error: {error}")
-		print("Check your credentials and index configuration.")
+        print("Sample completed successfully!")
 
-
-__all__ = ["load_and_query_sample"]
+    except Exception as error:
+        print(f"Error: {error}")
+        print("Check your credentials and index configuration.")
 
 
 if __name__ == "__main__":
-	asyncio.run(load_and_query_sample())
+    asyncio.run(load_and_query_sample())

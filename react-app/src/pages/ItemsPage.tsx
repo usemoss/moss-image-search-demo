@@ -1,45 +1,44 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QueryResultDocumentInfo } from "@inferedge/moss";
 import {
   searchImages,
   initializeSearchIndex,
   isSearchIndexLoaded,
   getSearchIndexLoadError,
+  switchIndex,
+  getCurrentTier,
+  getCurrentTierInfo,
+  TIERS,
 } from "../utils/searchUtils";
+import type { TierInfo } from "../utils/searchUtils";
+import Lightbox from "../components/Lightbox";
 import "../styles/ItemsPage.css";
 
-const LIBRARY_NAME = "MOSS";
+interface GalleryItem {
+  readonly id: string;
+  readonly caption: string;
+  readonly url: string;
+  readonly imageId: string;
+}
 
-type GalleryItem = {
-  id: string;
-  caption: string;
-  url: string;
-  photographer?: string;
-};
+interface QueryMeta {
+  readonly timeTakenInMs: number;
+  readonly status: "fulfilled" | "rejected";
+  readonly errorMessage?: string;
+}
 
-type QueryMeta = {
-  timeTakenInMs: number;
-  status: "fulfilled" | "rejected";
-  errorMessage?: string;
-};
-
-type IndexState = {
+interface IndexState {
   loaded: boolean;
   loading: boolean;
   error: string | null;
-};
+}
 
-const SAMPLE_QUERIES: string[] = [
-  "dancing at a wedding reception",
-  "moss-covered boulders along a forest river",
-  "vintage green steam locomotive in motion",
-  "dog wearing a hat indoors",
-  "cozy wood-paneled bedroom with fireplace",
-  "bar cart stocked with vodka, whiskey, and tonic bottles",
-  "cartoon witch against a full moon",
-  "dressage rider on a grey horse during competition",
-  "coastal harbor town with boats and palm trees",
+const SAMPLE_QUERIES: readonly string[] = [
+  "a dog catching a frisbee in mid-air",
+  "cozy vibes",
+  "surfers riding waves at the beach",
+  "something dramatic",
+  "a kitchen with stainless steel appliances",
 ];
 
 const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | null => {
@@ -54,15 +53,25 @@ const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | 
     id: record.id,
     caption: record.text,
     url,
-    photographer: typeof metadata.photographer === "string" ? metadata.photographer : undefined,
+    imageId: typeof metadata.image_id === "string" ? metadata.image_id : record.id,
   };
 };
+
+function getSpeedBadgeClass(ms: number): string {
+  if (ms < 10) return "speed-badge--green";
+  if (ms <= 50) return "speed-badge--yellow";
+  return "speed-badge--red";
+}
 
 const ImageSearchPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<QueryResultDocumentInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [queryMetadata, setQueryMetadata] = useState<QueryMeta | null>(null);
+  const [selectedTier, setSelectedTier] = useState<string>(getCurrentTier());
+  const [tierInfo, setTierInfo] = useState<TierInfo>(getCurrentTierInfo());
+  const [activeSampleQuery, setActiveSampleQuery] = useState<string | null>(null);
+  const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
   const [indexState, setIndexState] = useState<IndexState>(() => {
     const loaded = isSearchIndexLoaded();
     const error = getSearchIndexLoadError();
@@ -73,16 +82,15 @@ const ImageSearchPage = () => {
     };
   });
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
   const hasQuery = trimmedTerm.length > 0;
 
   useEffect(() => {
-    if (indexState.loaded) {
-      return;
-    }
+    if (indexState.loaded) return;
 
     let isCancelled = false;
-    setIndexState((previous) => ({ ...previous, loading: true, error: null }));
+    setIndexState((prev) => ({ ...prev, loading: true, error: null }));
 
     initializeSearchIndex()
       .then(() => {
@@ -103,6 +111,16 @@ const ImageSearchPage = () => {
     return () => {
       isCancelled = true;
     };
+  }, [indexState.loaded]);
+
+  // Auto-run first sample query when index loads
+  useEffect(() => {
+    if (indexState.loaded && !hasAutoQueried.current) {
+      hasAutoQueried.current = true;
+      const firstQuery = SAMPLE_QUERIES[0];
+      setSearchTerm(firstQuery);
+      setActiveSampleQuery(firstQuery);
+    }
   }, [indexState.loaded]);
 
   useEffect(() => {
@@ -155,10 +173,7 @@ const ImageSearchPage = () => {
   }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded]);
 
   const galleryItems = useMemo(() => {
-    if (!hasQuery) {
-      return [];
-    }
-
+    if (!hasQuery) return [];
     return searchResults
       .map(mapRecordToGalleryItem)
       .filter((item): item is GalleryItem => Boolean(item));
@@ -172,18 +187,42 @@ const ImageSearchPage = () => {
 
   const searchDisabled = !indexState.loaded || Boolean(indexState.error);
 
-  const handleSampleQueryClick = (query: string) => {
+  const handleSampleQueryClick = useCallback((query: string) => {
     setSearchTerm(query);
+    setActiveSampleQuery(query);
     if (searchInputRef.current) {
       searchInputRef.current.focus();
       searchInputRef.current.select();
     }
-  };
+  }, []);
 
-  const handleRetryInitialization = async () => {
-    if (indexState.loading) {
-      return;
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setActiveSampleQuery(null);
+  }, []);
+
+  const handleTierChange = useCallback(async (event: ChangeEvent<HTMLSelectElement>) => {
+    const newTier = event.target.value;
+    setSelectedTier(newTier);
+    setTierInfo(TIERS.find((t) => t.value === newTier) ?? TIERS[0]);
+    setIndexState({ loaded: false, loading: true, error: null });
+    setSearchResults([]);
+    setQueryMetadata(null);
+
+    try {
+      await switchIndex(newTier);
+      setIndexState({ loaded: true, loading: false, error: null });
+    } catch (error) {
+      setIndexState({
+        loaded: false,
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
+  }, []);
+
+  const handleRetryInitialization = useCallback(async () => {
+    if (indexState.loading) return;
 
     setIndexState({ loaded: false, loading: true, error: null });
 
@@ -197,62 +236,136 @@ const ImageSearchPage = () => {
         error: error instanceof Error ? error.message : String(error),
       });
     }
-  };
+  }, [indexState.loading]);
+
+  const handleLightboxFindSimilar = useCallback((caption: string) => {
+    setSearchTerm(caption);
+    setActiveSampleQuery(null);
+    setLightboxItem(null);
+  }, []);
 
   return (
     <div className="items-page">
-      <header className="branding-header">
-        <h1>In-app Real-time Image Search</h1>
+      {/* Dark gradient hero header */}
+      <header className="hero-header">
+        <img
+          src="/images/InferEdgeLogo_Dark_Icon.png"
+          alt="Moss"
+          className="hero-logo"
+        />
+        <h1>Moss Image Search</h1>
+        <p className="hero-tagline">
+          Sub-10ms semantic search across {tierInfo.docCount} images
+        </p>
       </header>
 
-      <div className="search-container">
-        <h2>Search the gallery</h2>
-        <div className="search-input-container">
-          <input
-            type="text"
-            placeholder={'Try "curious kittens" or "polar bears"'}
-            value={searchTerm}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)}
-            className="search-input"
-            disabled={searchDisabled}
-            ref={searchInputRef}
-          />
-          <div className="powered-by">
-            <span>Powered by</span>
-            <img
-              src="/images/InferEdgeLogo_Dark_Mono_Icon.png"
-              alt="InferEdge Logo"
-              className="inferedge-logo"
+      {/* Elevated search section overlapping header */}
+      <div className="search-section">
+        <div className="search-bar-wrapper">
+          <div className="search-input-row">
+            <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder='Try "a dog catching a frisbee" or "sunset over the ocean"'
+              value={searchTerm}
+              onChange={handleInputChange}
+              className="search-input"
+              disabled={searchDisabled}
+              ref={searchInputRef}
+              data-testid="search-input"
             />
-            <span>MOSS</span>
-          </div>
-        </div>
-        {indexState.loading && !indexState.loaded && !indexState.error && (
-          <p className="search-status">Loading the on-device index…</p>
-        )}
-        {SAMPLE_QUERIES.length > 0 && (
-          <div className="sample-queries">
-            <p className="sample-queries-label"> Or sample queries</p>
-            <div className="sample-queries-list">
-              {SAMPLE_QUERIES.map((query) => (
-                <button
-                  key={query}
-                  type="button"
-                  className="sample-query-button"
-                  onClick={() => handleSampleQueryClick(query)}
-                  disabled={searchDisabled}
-                >
-                  {query}
-                </button>
-              ))}
+            <div className="powered-by">
+              <span className="moss-dot" />
+              <span>MOSS</span>
             </div>
           </div>
+
+          {/* Controls: tier selector + speed badge */}
+          <div className="controls-row">
+            <div className="tier-selector">
+              <label htmlFor="tier-select">Index size:</label>
+              <select
+                id="tier-select"
+                className="tier-select"
+                value={selectedTier}
+                onChange={handleTierChange}
+                disabled={indexState.loading}
+                data-testid="tier-select"
+              >
+                {TIERS.map((tier) => (
+                  <option key={tier.value} value={tier.value}>
+                    {tier.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {queryMetrics && queryMetrics.status === "fulfilled" ? (
+              <div className={`speed-badge ${getSpeedBadgeClass(queryMetrics.timeTakenInMs)}`}>
+                <span className="speed-badge-dot" />
+                <span>{Math.round(queryMetrics.timeTakenInMs)}ms</span>
+                <span style={{ fontWeight: 400, opacity: 0.7 }}>query time</span>
+              </div>
+            ) : indexState.loaded && !queryMetrics ? (
+              <div className="speed-badge speed-badge--green">
+                <span className="speed-badge-dot" />
+                <span>&lt; 10ms</span>
+                <span style={{ fontWeight: 400, opacity: 0.7 }}>typical query time</span>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Sample queries */}
+          {SAMPLE_QUERIES.length > 0 && (
+            <div className="sample-queries">
+              <p className="sample-queries-label">Try a sample query</p>
+              <div className="sample-queries-list">
+                {SAMPLE_QUERIES.map((query, index) => (
+                  <button
+                    key={query}
+                    type="button"
+                    className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleSampleQueryClick(query)}
+                    disabled={searchDisabled}
+                    data-testid={`sample-query-${index}`}
+                  >
+                    {query}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="content-area">
+        {/* Skeleton loading state */}
+        {indexState.loading && !indexState.loaded && !indexState.error && (
+          <>
+            <p className="search-status">Loading the on-device index...</p>
+            <div className="skeleton-grid">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="skeleton-card" />
+              ))}
+            </div>
+          </>
         )}
+
+        {/* Index error */}
         {indexState.error && (
-          <div className="query-metrics">
-            <p className="query-metrics-error">
-              Failed to load the search index: {indexState.error}
+          <div className="index-error">
+            <p className="index-error-message">
+              Something went wrong loading the search index.
             </p>
+            <details className="error-details">
+              <summary>Technical details</summary>
+              <pre>{indexState.error}</pre>
+            </details>
             <button
               type="button"
               className="retry-button"
@@ -263,75 +376,84 @@ const ImageSearchPage = () => {
             </button>
           </div>
         )}
-        {isSearching && <p className="search-status">Searching…</p>}
-        {emptyState && <p className="search-status">No images match that description yet.</p>}
+        {isSearching && <p className="search-status">Searching...</p>}
+        {emptyState && <p className="search-status">No images match that description. Clear search or try a sample query above.</p>}
         {!hasQuery && !isSearching && indexState.loaded && !indexState.error && (
-          <p className="search-status">Enter a description above to explore the gallery.</p>
+          <p className="search-status">Clear search or try a sample query above.</p>
         )}
-        {queryMetrics && (
-          <div className="query-metrics">
-            <div className="query-metrics-header">
-              <span className="query-metrics-title">Time taken</span>
-              <span className="query-metrics-total">
-                {Math.round(queryMetrics.timeTakenInMs)} ms
-              </span>
-            </div>
-            {queryMetrics.status === "rejected" && queryMetrics.errorMessage && (
-              <p className="query-metrics-error">Query failed: {queryMetrics.errorMessage}</p>
-            )}
+
+        {/* Query error */}
+        {queryMetrics && queryMetrics.status === "rejected" && queryMetrics.errorMessage && (
+          <div className="index-error">
+            <p className="index-error-message">
+              Something went wrong with the search query.
+            </p>
+            <details className="error-details">
+              <summary>Technical details</summary>
+              <pre>{queryMetrics.errorMessage}</pre>
+            </details>
           </div>
         )}
-      </div>
 
-      <div className="items-list">
-        <h2>Search results</h2>
-        <div className="image-grid">
+        {/* Results */}
+        {hasQuery && galleryItems.length > 0 && (
+          <div className="results-header">
+            <h2>Results</h2>
+            <span className="results-count">{galleryItems.length} images</span>
+          </div>
+        )}
+
+        <div className="masonry-grid">
           {galleryItems.map((item) => (
-            <ImageCard key={item.id} item={item} />
+            <MasonryCard key={item.id} item={item} onSelect={setLightboxItem} />
           ))}
         </div>
-        {!hasQuery && galleryItems.length === 0 && (
-          <p className="search-status subtle">Results will appear here.</p>
-        )}
       </div>
 
-      <footer className="branding-footer">
-        <p>
-          Powered by {LIBRARY_NAME} — Bringing fast, on-device semantic search
-          to your apps.
-        </p>
+      {/* Footer */}
+      <footer className="site-footer">
+        <p>&copy; {new Date().getFullYear()} <a href="https://usemoss.com" target="_blank" rel="noopener noreferrer">Moss</a>. All rights reserved.</p>
       </footer>
+
+      {/* Lightbox */}
+      {lightboxItem && (
+        <Lightbox
+          item={lightboxItem}
+          onClose={() => setLightboxItem(null)}
+          onFindSimilar={handleLightboxFindSimilar}
+        />
+      )}
     </div>
   );
 };
 
 export default ImageSearchPage;
 
-const ImageCard = ({ item }: { item: GalleryItem }) => {
+const MasonryCard = ({ item, onSelect }: { readonly item: GalleryItem; readonly onSelect: (item: GalleryItem) => void }) => {
   const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) {
-    return null;
-  }
+  if (!isVisible) return null;
+
+  const firstCaption = item.caption.split(" | ")[0] ?? item.caption;
 
   return (
-    <Link
-      to={`/image/${item.id}`}
-      className="image-card"
-      state={{ item }}
+    <div
+      className="masonry-card"
+      onClick={() => onSelect(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(item); }}
+      data-testid="image-card"
     >
       <img
         src={item.url}
-        alt={item.caption}
-        className="image-thumb"
+        alt={firstCaption}
         loading="lazy"
         onError={() => setIsVisible(false)}
       />
-      {item.photographer && (
-        <div className="image-meta">
-          <p className="image-photographer">Photo by {item.photographer}</p>
-        </div>
-      )}
-    </Link>
+      <div className="card-overlay">
+        <p className="card-overlay-text">{firstCaption}</p>
+      </div>
+    </div>
   );
 };
