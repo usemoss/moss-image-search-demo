@@ -61,10 +61,16 @@
   transform: scale(1.1);
 }
 
+/* ========== Image Container (holds image + nav arrows) ========== */
+.lightbox-image-container {
+  position: relative;
+}
+
 .lightbox-image {
   width: 100%;
   max-height: 60vh;
   object-fit: contain;
+  display: block;
   background: var(--bg-deep);
 }
 
@@ -114,6 +120,43 @@
   transform: translateY(-1px);
 }
 
+/* ========== Navigation Arrows ========== */
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.lightbox-nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.lightbox-nav:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.lightbox-nav--prev {
+  left: 12px;
+}
+
+.lightbox-nav--next {
+  right: 12px;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .lightbox-backdrop {
@@ -126,5 +169,18 @@
 
   .lightbox-info {
     padding: 16px;
+  }
+
+  .lightbox-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .lightbox-nav--prev {
+    left: 8px;
+  }
+
+  .lightbox-nav--next {
+    right: 8px;
   }
 }

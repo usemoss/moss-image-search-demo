@@ -88,7 +88,8 @@ const ImageSearchPage = () => {
   const [searchMode, setSearchMode] = useState<SearchMode>("python");
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
-  const [showSamples, setShowSamples] = useState(true);
+  const [showControls, setShowControls] = useState(() => window.innerWidth > 768);
+  const [showSamples, setShowSamples] = useState(() => window.innerWidth > 768);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -315,65 +316,89 @@ const ImageSearchPage = () => {
           </div>
 
           {/* Controls: tier selector + sdk toggle */}
-          <div className="controls-row">
-            <div className="tier-selector">
-              <label htmlFor="tier-select">Index size:</label>
-              <select
-                id="tier-select"
-                className="tier-select"
-                value={selectedTier}
-                onChange={(e) => handleTierChange(e, searchMode)}
-                disabled={indexState.loading}
-                data-testid="tier-select"
+          <div className="controls-section">
+            <button
+              type="button"
+              className="controls-toggle"
+              onClick={() => setShowControls(!showControls)}
+            >
+              <span>Settings</span>
+              <svg
+                className={`chevron${showControls ? ' chevron--open' : ''}`}
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {TIERS.map((tier) => (
-                  <option key={tier.value} value={tier.value}>
-                    {tier.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <polyline points="2,4 6,8 10,4" />
+              </svg>
+            </button>
+            {showControls && (
+              <div className="controls-row">
+                <div className="tier-selector">
+                  <label htmlFor="tier-select">Index size:</label>
+                  <select
+                    id="tier-select"
+                    className="tier-select"
+                    value={selectedTier}
+                    onChange={(e) => handleTierChange(e, searchMode)}
+                    disabled={indexState.loading}
+                    data-testid="tier-select"
+                  >
+                    {TIERS.map((tier) => (
+                      <option key={tier.value} value={tier.value}>
+                        {tier.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="topk-selector">
-              <label htmlFor="topk-input">Results:</label>
-              <input
-                id="topk-input"
-                type="number"
-                className="topk-input"
-                value={topKInput}
-                onChange={(e) => setTopKInput(e.target.value)}
-                onBlur={() => {
-                  const v = Math.max(1, Math.min(50, Number(topKInput) || 1));
-                  setTopK(v);
-                  setTopKInput(String(v));
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    (e.target as HTMLInputElement).blur();
-                  }
-                }}
-                min={1}
-                max={50}
-              />
-            </div>
+                <div className="topk-selector">
+                  <label htmlFor="topk-input">Results:</label>
+                  <input
+                    id="topk-input"
+                    type="number"
+                    className="topk-input"
+                    value={topKInput}
+                    onChange={(e) => setTopKInput(e.target.value)}
+                    onBlur={() => {
+                      const v = Math.max(1, Math.min(50, Number(topKInput) || 1));
+                      setTopK(v);
+                      setTopKInput(String(v));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
+                    min={1}
+                    max={50}
+                  />
+                </div>
 
-            <div className="sdk-toggle">
-              <span className="sdk-toggle-label">SDK:</span>
-              <button
-                type="button"
-                className={`sdk-toggle-btn sdk-toggle-btn--python${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
-                onClick={() => handleModeChange("python")}
-              >
-                Python
-              </button>
-              <button
-                type="button"
-                className={`sdk-toggle-btn sdk-toggle-btn--js${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
-                onClick={() => handleModeChange("js")}
-              >
-                JS
-              </button>
-            </div>
+                <div className="sdk-toggle">
+                  <span className="sdk-toggle-label">SDK:</span>
+                  <button
+                    type="button"
+                    className={`sdk-toggle-btn sdk-toggle-btn--python${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
+                    onClick={() => handleModeChange("python")}
+                  >
+                    Python
+                  </button>
+                  <button
+                    type="button"
+                    className={`sdk-toggle-btn sdk-toggle-btn--js${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
+                    onClick={() => handleModeChange("js")}
+                  >
+                    JS
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sample queries */}
@@ -524,7 +549,9 @@ const ImageSearchPage = () => {
       {lightboxItem && (
         <Lightbox
           item={lightboxItem}
+          items={galleryItems}
           onClose={() => setLightboxItem(null)}
+          onNavigate={setLightboxItem}
           onFindSimilar={handleLightboxFindSimilar}
         />
       )}
