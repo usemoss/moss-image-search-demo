@@ -1,3 +1,9 @@
+.items-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ========== Animations ========== */
 @keyframes fade-up-blur {
   from {
@@ -104,11 +110,13 @@
 
 /* ========== Search Section ========== */
 .search-section {
+  width: 100%;
   max-width: 720px;
   margin: -36px auto 0;
   padding: 0 20px;
   position: relative;
   z-index: 10;
+  box-sizing: border-box;
 }
 
 .search-bar-wrapper {
@@ -387,7 +395,9 @@
 
 /* ========== Content Area ========== */
 .content-area {
+  flex: 1;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 24px 20px 60px;
 }
