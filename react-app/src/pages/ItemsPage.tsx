@@ -110,7 +110,7 @@ const ImageSearchPage = () => {
             setIndexState({
               loaded: false,
               loading: false,
-              error: `Python backend unreachable at ${import.meta.env.VITE_PYTHON_API_URL ?? "http://localhost:8000"}`,
+              error: `Python backend unreachable at ${import.meta.env.MOSS_API_URL ?? "http://localhost:8000"}`,
             });
           }
         }
@@ -463,12 +463,12 @@ const ImageSearchPage = () => {
 
       {/* Main content */}
       <div className="content-area">
-        {/* Skeleton loading state */}
-        {indexState.loading && !indexState.loaded && !indexState.error && (
+        {/* Skeleton — shown while loading index OR during initial search (no results yet) */}
+        {(indexState.loading || (isSearching && galleryItems.length === 0)) && !indexState.error && (
           <>
             <p className="search-status">
-            {searchMode === "python" ? "Connecting to Python backend..." : "Loading the on-device index..."}
-          </p>
+              {indexState.loading ? "Loading the index..." : "Searching..."}
+            </p>
             <div className="skeleton-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="skeleton-card" />
@@ -497,7 +497,6 @@ const ImageSearchPage = () => {
             </button>
           </div>
         )}
-        {isSearching && <p className="search-status">Searching...</p>}
         {emptyState && <p className="search-status">No images match that description. Clear search or try a sample query above.</p>}
 
         {/* Welcome state */}
