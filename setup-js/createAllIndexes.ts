@@ -1,5 +1,5 @@
 /**
- * Creates Moss indexes for all five COCO tiers sequentially.
+ * Creates Moss indexes for all four COCO tiers sequentially.
  *
  * Requires MOSS_PROJECT_ID, MOSS_PROJECT_KEY, and MOSS_INDEX_NAME in .env.
  * Data files (coco-data-*.json) must exist — run downloadCoco.ts first.

@@ -77,5 +77,4 @@ if (!VALID_TIERS.includes(tier)) {
 
 createIndexForTier(tier).catch(console.error);
 
-export { createIndexForTier, VALID_TIERS, getIndexName };
-export type { Tier };
+export { createIndexForTier, VALID_TIERS };

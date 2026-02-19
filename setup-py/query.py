@@ -53,17 +53,17 @@ async def load_and_query_sample() -> None:
         print("Index loaded successfully")
         print("=" * 40)
 
-        query = SAMPLE_QUERIES[0]
-        print("\nPerforming search...\n")
-        results = await client.query(index_name, query, QueryOptions(top_k=TOP_K))
+        for query in SAMPLE_QUERIES:
+            print(f"\nPerforming search for: \"{query}\"\n")
+            results = await client.query(index_name, query, QueryOptions(top_k=TOP_K))
 
-        print(f"Found {len(results.docs)} results in {results.time_taken_ms}ms\n")
-        for idx, doc in enumerate(results.docs, 1):
-            print(f"[{doc.id}] Result {idx}")
-            print(f"Score: {doc.score:.3f}")
-            print(f"Snippet: {doc.text}\n")
+            print(f"Found {len(results.docs)} results in {results.time_taken_ms}ms\n")
+            for idx, doc in enumerate(results.docs, 1):
+                print(f"[{doc.id}] Result {idx}")
+                print(f"Score: {doc.score:.3f}")
+                print(f"Snippet: {doc.text}\n")
 
-        print("Sample completed successfully!")
+        print("All queries completed successfully!")
 
     except Exception as error:
         print(f"Error: {error}")

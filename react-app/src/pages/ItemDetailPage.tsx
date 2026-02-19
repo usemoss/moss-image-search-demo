@@ -1,30 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { QueryResultDocumentInfo } from "@inferedge/moss";
+import { GalleryItem, mapRecordToGalleryItem } from "../utils/galleryUtils";
 import "../styles/ItemDetailPage.css";
-
-interface GalleryItem {
-  readonly id: string;
-  readonly caption: string;
-  readonly url: string;
-  readonly imageId: string;
-}
-
-const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | null => {
-  const metadata = record.metadata ?? ({} as Record<string, string>);
-  const url = typeof metadata.url === "string" ? metadata.url : undefined;
-
-  if (!url) {
-    return null;
-  }
-
-  return {
-    id: record.id,
-    caption: record.text,
-    url,
-    imageId: typeof metadata.image_id === "string" ? metadata.image_id : record.id,
-  };
-};
 
 const ImageDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,7 +57,7 @@ const ImageDetailPage = () => {
               <p className="image-status">We couldn&apos;t load this image right now.</p>
             )}
             {captions.length > 0 && (
-              <p className="image-caption-text serif-caption">
+              <p className="image-caption-text">
                 {captions.join(" \u2022 ")}
               </p>
             )}

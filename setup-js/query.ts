@@ -46,16 +46,16 @@ async function loadAndQuerySample(): Promise<void> {
     await client.loadIndex(indexName);
     console.log("Index loaded successfully");
 
-    const query = SAMPLE_QUERIES[0];
-    console.log("\nPerforming search...");
-    const searchResults = await client.query(indexName, query, { topK: TOP_K });
+    for (const query of SAMPLE_QUERIES) {
+      console.log(`\nPerforming search for: "${query}"`);
+      const searchResults = await client.query(indexName, query, { topK: TOP_K });
 
-    console.log(`Search results for query: "${query}"`);
-    console.log(`Time taken: ${searchResults.timeTakenInMs} ms`);
-    console.log(`Results: ${searchResults.docs.length}`);
-    console.log(searchResults.docs);
+      console.log(`Time taken: ${searchResults.timeTakenInMs} ms`);
+      console.log(`Results: ${searchResults.docs.length}`);
+      console.log(searchResults.docs);
+    }
 
-    console.log("\nSample completed successfully!");
+    console.log("\nAll queries completed successfully!");
   } catch (error) {
     console.error(`Error: ${error}`);
   }

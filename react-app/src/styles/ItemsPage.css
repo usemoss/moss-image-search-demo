@@ -197,12 +197,6 @@
   border-color: var(--border-hover);
 }
 
-.inferedge-logo {
-  height: 18px;
-  width: 18px;
-  display: inline-block;
-}
-
 /* ========== SDK Toggle ========== */
 .sdk-toggle {
   display: flex;

@@ -1,18 +1,12 @@
 import { useCallback, useEffect } from "react";
+import { GalleryItem } from "../utils/galleryUtils";
 import "../styles/Lightbox.css";
 
-interface LightboxItem {
-  readonly id: string;
-  readonly caption: string;
-  readonly url: string;
-  readonly imageId: string;
-}
-
 interface LightboxProps {
-  readonly item: LightboxItem;
-  readonly items: readonly LightboxItem[];
+  readonly item: GalleryItem;
+  readonly items: readonly GalleryItem[];
   readonly onClose: () => void;
-  readonly onNavigate: (item: LightboxItem) => void;
+  readonly onNavigate: (item: GalleryItem) => void;
   readonly onFindSimilar: (caption: string) => void;
 }
 

@@ -13,15 +13,9 @@ import {
   TIERS,
 } from "../utils/searchUtils";
 import type { TierInfo } from "../utils/searchUtils";
+import { GalleryItem, mapRecordToGalleryItem } from "../utils/galleryUtils";
 import Lightbox from "../components/Lightbox";
 import "../styles/ItemsPage.css";
-
-interface GalleryItem {
-  readonly id: string;
-  readonly caption: string;
-  readonly url: string;
-  readonly imageId: string;
-}
 
 interface QueryMeta {
   readonly timeTakenInMs: number;
@@ -44,22 +38,6 @@ const SAMPLE_QUERIES: readonly string[] = [
   "something dramatic",
   "a kitchen with stainless steel appliances",
 ];
-
-const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): GalleryItem | null => {
-  const metadata = (record.metadata || {}) as Record<string, string>;
-  const url = typeof metadata.url === "string" ? metadata.url : undefined;
-
-  if (!url) {
-    return null;
-  }
-
-  return {
-    id: record.id,
-    caption: record.text,
-    url,
-    imageId: typeof metadata.image_id === "string" ? metadata.image_id : record.id,
-  };
-};
 
 function getSpeedBadgeClass(ms: number): string {
   if (ms < 10) return "speed-badge--green";
