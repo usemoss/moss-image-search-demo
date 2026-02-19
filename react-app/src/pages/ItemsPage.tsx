@@ -467,7 +467,7 @@ const ImageSearchPage = () => {
         {(indexState.loading || (isSearching && galleryItems.length === 0)) && !indexState.error && (
           <>
             <p className="search-status">
-              {indexState.loading ? "Loading the index..." : "Searching..."}
+              {"Warming up the search engine..."}
             </p>
             <div className="skeleton-grid">
               {Array.from({ length: 8 }).map((_, i) => (
