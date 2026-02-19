@@ -16,10 +16,11 @@ cp .env.example .env
 ```
 All sub-projects read from this one file.
 
-**2. Download the dataset and create the Moss index:**
+**2. Create the Moss index** (`coco-data-1k.json` and `coco-data-10k.json` are included — no download needed):
 ```bash
-cd setup-js && npm install && npx tsx downloadCoco.ts && npx tsx createIndex.ts && cd ..
+cd setup-js && npm install && npx tsx createIndex.ts && cd ..
 ```
+> To use 50k or 100k tiers, run `npx tsx downloadCoco.ts` first to generate those files.
 
 **3. Start the backend** (in one terminal):
 ```bash
@@ -49,7 +50,9 @@ Open [http://localhost:5173](http://localhost:5173) and start searching.
 
 ## 2. Download Dataset
 
-The demo uses COCO Captions images split into tiers (1k, 10k, 50k, 100k). Run the download script from either the JS or Python setup folder to fetch and generate the tiered JSON files.
+The demo uses COCO Captions images split into tiers (1k, 10k, 50k, 100k).
+
+`coco-data-1k.json` and `coco-data-10k.json` are included in the repo — no download needed for those. To use the larger tiers (50k, 100k), run the download script to generate them:
 
 **JavaScript:**
 ```bash
@@ -66,7 +69,7 @@ uv sync
 python download_coco.py
 ```
 
-This produces `coco-data-1k.json`, `coco-data-10k.json`, `coco-data-50k.json`, `coco-data-100k.json`, and `coco-data in the project root.
+This generates `coco-data-50k.json` and `coco-data-100k.json` in the project root.
 
 ## 3. Setup - Upload data and create index
 
