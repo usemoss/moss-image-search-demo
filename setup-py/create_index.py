@@ -15,7 +15,7 @@ from typing import List
 from dotenv import load_dotenv
 from inferedge_moss import DocumentInfo, MossClient
 
-load_dotenv(".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 VALID_TIERS = ("1k", "10k", "50k", "100k")
 DEFAULT_MODEL_ID = "moss-minilm"

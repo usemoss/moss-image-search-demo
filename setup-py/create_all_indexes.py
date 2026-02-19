@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import asyncio
 
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 from create_index import VALID_TIERS, create_index_for_tier
 
-load_dotenv(".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
 async def create_all_indexes() -> None:

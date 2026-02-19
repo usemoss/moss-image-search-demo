@@ -11,11 +11,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from inferedge_moss import MossClient
 from moss_core import QueryOptions
 
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 PROJECT_ID = os.getenv("MOSS_PROJECT_ID", "")
 PROJECT_KEY = os.getenv("MOSS_PROJECT_KEY", "")
 BASE_INDEX_NAME = os.getenv("MOSS_INDEX_NAME", "coco-data")
+CORS_ORIGINS = os.getenv(
+    "MOSS_CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:4173",
+).split(",")
 TOP_K_DEFAULT = 5
 
 client = MossClient(PROJECT_ID, PROJECT_KEY)
@@ -43,7 +47,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:4173"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["GET"],
     allow_headers=["*"],
 )

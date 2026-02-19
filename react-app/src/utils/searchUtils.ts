@@ -23,10 +23,10 @@ export const TIERS: readonly TierInfo[] = [
 const TOP_K = 5;
 
 const mossClient = new MossClient(
-    import.meta.env.VITE_MOSS_PROJECT_ID,
-    import.meta.env.VITE_MOSS_PROJECT_KEY
+    import.meta.env.MOSS_PROJECT_ID,
+    import.meta.env.MOSS_PROJECT_KEY
 );
-const baseIndexName: string = import.meta.env.VITE_MOSS_INDEX_NAME;
+const baseIndexName: string = import.meta.env.MOSS_INDEX_NAME;
 
 let currentTier = "1k";
 let isIndexLoaded = false;
@@ -103,7 +103,7 @@ export const getSearchIndexLoadError = (): Error | null => indexLoadError;
 /**
  * Executes a hybrid search against the current tier's image index.
  */
-const PYTHON_API_BASE = (import.meta.env.VITE_PYTHON_API_URL as string | undefined) ?? "http://localhost:8000";
+const PYTHON_API_BASE = (import.meta.env.MOSS_API_URL as string | undefined) ?? "http://localhost:8000";
 
 export const searchImagesViaPythonApi = async (
     term: string,
@@ -159,7 +159,7 @@ export const searchImages = async (term: string, topK = TOP_K): Promise<SearchIm
         const result: SearchResult = await mossClient.query(
             indexName,
             queryTerm,
-            topK
+            { topK }
         );
         const docs: QueryResultDocumentInfo[] = (result.docs ?? []).map((doc) => ({
             ...doc,

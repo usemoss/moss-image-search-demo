@@ -5,11 +5,12 @@
  */
 
 import { MossClient } from "@inferedge/moss";
+import * as path from "path";
 import { config } from "dotenv";
 
-config();
+config({ path: path.resolve(__dirname, "../.env") });
 
-const TOP_K = 10;
+const TOP_K = 5;
 
 const SAMPLE_QUERIES: readonly string[] = [
   "a dog catching a frisbee in mid-air",
@@ -47,7 +48,7 @@ async function loadAndQuerySample(): Promise<void> {
 
     const query = SAMPLE_QUERIES[0];
     console.log("\nPerforming search...");
-    const searchResults = await client.query(indexName, query, TOP_K);
+    const searchResults = await client.query(indexName, query, { topK: TOP_K });
 
     console.log(`Search results for query: "${query}"`);
     console.log(`Time taken: ${searchResults.timeTakenInMs} ms`);

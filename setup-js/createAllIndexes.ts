@@ -5,10 +5,11 @@
  * Data files (coco-data-*.json) must exist — run downloadCoco.ts first.
  */
 
+import * as path from "path";
 import { createIndexForTier, VALID_TIERS } from "./createIndex";
 import { config } from "dotenv";
 
-config();
+config({ path: path.resolve(__dirname, "../.env") });
 
 async function createAllIndexes(): Promise<void> {
   console.log("Creating indexes for all tiers...\n");

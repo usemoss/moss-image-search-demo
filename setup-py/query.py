@@ -7,9 +7,11 @@ from __future__ import annotations
 
 import asyncio
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from inferedge_moss import MossClient
+from moss_core import QueryOptions
 
 TOP_K = 10
 
@@ -24,7 +26,7 @@ SAMPLE_QUERIES = [
 
 async def load_and_query_sample() -> None:
     """Load an existing image index and execute a sample hybrid query."""
-    load_dotenv()
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
     project_id = os.getenv("MOSS_PROJECT_ID")
     project_key = os.getenv("MOSS_PROJECT_KEY")
@@ -53,7 +55,7 @@ async def load_and_query_sample() -> None:
 
         query = SAMPLE_QUERIES[0]
         print("\nPerforming search...\n")
-        results = await client.query(index_name, query, top_k=TOP_K)
+        results = await client.query(index_name, query, QueryOptions(top_k=TOP_K))
 
         print(f"Found {len(results.docs)} results in {results.time_taken_ms}ms\n")
         for idx, doc in enumerate(results.docs, 1):

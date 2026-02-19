@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { config } from "dotenv";
 
-config();
+config({ path: path.resolve(__dirname, "../.env") });
 
 const VALID_TIERS = ["1k", "10k", "50k", "100k"] as const;
 type Tier = (typeof VALID_TIERS)[number];
@@ -62,7 +62,7 @@ async function createIndexForTier(tier: Tier): Promise<void> {
     // Index doesn't exist, proceed with creation
   }
 
-  await client.createIndex(indexName, docs, "moss-minilm");
+  await client.createIndex(indexName, docs, { modelId: "moss-minilm" });
   console.log(
     `Index "${indexName}" created successfully with ${docs.length} documents.`
   );

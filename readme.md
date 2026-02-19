@@ -8,10 +8,42 @@ This repo bundles thin, working examples that show how to talk to Moss from Pyth
 > **Try out the live deployment of this sample project at https://moss-image-search-demo.vercel.app/**
 > <img width="2234" height="1626" alt="Image" src="https://github.com/user-attachments/assets/9dd4290d-aa9d-456d-a5b6-59eb378d27d6" />
 
+## Quick Start
+
+**1. Create a single `.env` at the repo root** — copy `.env.example` and fill in your Moss credentials:
+```bash
+cp .env.example .env
+```
+All sub-projects read from this one file.
+
+**2. Download the dataset and create the Moss index:**
+```bash
+cd setup-js && npm install && npx tsx downloadCoco.ts && npx tsx createIndex.ts && cd ..
+```
+
+**3. Start the backend** (in one terminal):
+```bash
+cd backend
+uv venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
+uv sync
+uvicorn main:app --reload
+```
+
+**4. Start the React app** (in another terminal):
+```bash
+cd react-app && npm install && npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) and start searching.
+
+> The app defaults to Python mode (queries via the backend). You can switch to JS mode (direct browser → Moss) using the SDK toggle in Settings.
+
+---
+
 ## 1. Go to Moss Portal and Get API Keys
 
 - Visit [usemoss.dev](https://usemoss.dev/) to sign up, create an account, confirm your email, and sign in.
-- From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in your `.env` for the samples either in the setup-js or the setup-py folders.
+- From the dashboard, open **View secrets** and save the values as `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` in the root `.env` file (copy `.env.example` → `.env`).
 
 > ![Moss Portal walkthrough](https://github.com/user-attachments/assets/c3db9d2d-0df5-4cec-99fd-7d49d0a30844)
 
