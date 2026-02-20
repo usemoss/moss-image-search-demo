@@ -22,22 +22,27 @@ cd setup-js && npm install && npx tsx createIndex.ts && cd ..
 ```
 > To use 50k or 100k tiers, run `npx tsx downloadCoco.ts` first to generate those files.
 
-**3. Start the backend** (in one terminal):
+**3. Start the Python backend** (in one terminal):
 ```bash
-cd backend
+cd backend-py
 uv venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
 uv sync
 uvicorn main:app --reload
 ```
 
-**4. Start the React app** (in another terminal):
+**4. Start the JS backend** (in another terminal):
+```bash
+cd backend-js && npm install && npm run dev
+```
+
+**5. Start the React app** (in another terminal):
 ```bash
 cd react-app && npm install && npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) and start searching.
 
-> The app defaults to Python mode (queries via the backend). You can switch to JS mode (direct browser → Moss) using the SDK toggle in Settings.
+> The app supports three search modes — **Python** (FastAPI on port 8000), **JS** (Express on port 8001), and **in-Browser** (zero server calls) — switch between them using the SDK tabs in the search bar.
 
 ---
 
@@ -101,9 +106,9 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 
 ## 4. Backend (optional)
 
-A FastAPI backend is included in the `backend` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client.
+A FastAPI backend is included in the `backend-py` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client.
 
-1. Navigate to the `backend` folder.
+1. Navigate to the `backend-py` folder.
 2. Install Python 3.9+ and uv.
 3. `uv venv && source .venv/bin/activate`
 4. `uv sync` to install dependencies.

@@ -7,7 +7,7 @@ export interface GalleryItem {
   readonly imageId: string;
 }
 
-const API_BASE = (import.meta.env.MOSS_API_URL as string | undefined) || "";
+const API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "";
 
 function proxyImageUrl(url: string): string {
   if (url.startsWith("http://")) {

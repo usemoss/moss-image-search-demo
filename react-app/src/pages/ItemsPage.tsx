@@ -3,7 +3,9 @@ import { QueryResultDocumentInfo } from "@inferedge/moss";
 import {
   searchImages,
   searchImagesViaPythonApi,
+  searchImagesViaJsApi,
   checkPythonApiHealth,
+  checkJsApiHealth,
   initializeSearchIndex,
   isSearchIndexLoaded,
   getSearchIndexLoadError,
@@ -29,7 +31,7 @@ interface IndexState {
   error: string | null;
 }
 
-type SearchMode = "js" | "python";
+type SearchMode = "browser" | "python" | "js";
 
 const SAMPLE_QUERIES: readonly string[] = [
   "a dog catching a frisbee in mid-air",
@@ -66,8 +68,7 @@ const ImageSearchPage = () => {
   const [searchMode, setSearchMode] = useState<SearchMode>("python");
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
-  const [showControls, setShowControls] = useState(() => window.innerWidth > 768);
-  const [showSamples, setShowSamples] = useState(() => window.innerWidth > 768);
+  const [activePanel, setActivePanel] = useState<"settings" | "samples" | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -88,7 +89,21 @@ const ImageSearchPage = () => {
             setIndexState({
               loaded: false,
               loading: false,
-              error: `Python backend unreachable at ${import.meta.env.MOSS_API_URL ?? "http://localhost:8000"}`,
+              error: `Python backend unreachable at ${import.meta.env.MOSS_PYTHON_API_URL ?? "http://localhost:8000"}`,
+            });
+          }
+        }
+      });
+    } else if (searchMode === "js") {
+      checkJsApiHealth().then((ok) => {
+        if (!isCancelled) {
+          if (ok) {
+            setIndexState({ loaded: true, loading: false, error: null });
+          } else {
+            setIndexState({
+              loaded: false,
+              loading: false,
+              error: `JS backend unreachable at ${import.meta.env.MOSS_JS_API_URL ?? "http://localhost:8001"}`,
             });
           }
         }
@@ -149,7 +164,9 @@ const ImageSearchPage = () => {
         const { results, timeTakenInMs, status, errorMessage } =
           searchMode === "python"
             ? await searchImagesViaPythonApi(trimmedTerm, selectedTier, topK)
-            : await searchImages(trimmedTerm, topK);
+            : searchMode === "js"
+              ? await searchImagesViaJsApi(trimmedTerm, selectedTier, topK)
+              : await searchImages(trimmedTerm, topK);
         if (!isCancelled) {
           setSearchResults(results);
           setQueryMetadata({ timeTakenInMs, status, errorMessage });
@@ -222,7 +239,7 @@ const ImageSearchPage = () => {
     setSearchResults([]);
     setQueryMetadata(null);
 
-    if (currentMode === "python") {
+    if (currentMode === "python" || currentMode === "js") {
       return;
     }
 
@@ -293,132 +310,143 @@ const ImageSearchPage = () => {
             </div>
           </div>
 
-          {/* Controls: tier selector + sdk toggle */}
-          <div className="controls-section">
+          {/* SDK mode tab bar */}
+          <div className="sdk-tabs">
             <button
               type="button"
-              className="controls-toggle"
-              onClick={() => setShowControls(!showControls)}
+              className={`sdk-tab sdk-tab--python${searchMode === "python" ? " sdk-tab--active" : ""}`}
+              onClick={() => handleModeChange("python")}
             >
-              <span>Settings</span>
-              <svg
-                className={`chevron${showControls ? ' chevron--open' : ''}`}
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="2,4 6,8 10,4" />
-              </svg>
+              <span className="sdk-tab-name">Python</span>
+              <span className="sdk-tab-sep">&middot;</span>
+              <span className="sdk-tab-desc">FastAPI</span>
             </button>
-            {showControls && (
-              <div className="controls-row">
-                <div className="tier-selector">
-                  <label htmlFor="tier-select">Index size:</label>
-                  <select
-                    id="tier-select"
-                    className="tier-select"
-                    value={selectedTier}
-                    onChange={(e) => handleTierChange(e, searchMode)}
-                    disabled={indexState.loading}
-                    data-testid="tier-select"
-                  >
-                    {TIERS.map((tier) => (
-                      <option key={tier.value} value={tier.value}>
-                        {tier.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="topk-selector">
-                  <label htmlFor="topk-input">Results:</label>
-                  <input
-                    id="topk-input"
-                    type="number"
-                    className="topk-input"
-                    value={topKInput}
-                    onChange={(e) => setTopKInput(e.target.value)}
-                    onBlur={() => {
-                      const v = Math.max(1, Math.min(50, Number(topKInput) || 1));
-                      setTopK(v);
-                      setTopKInput(String(v));
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        (e.target as HTMLInputElement).blur();
-                      }
-                    }}
-                    min={1}
-                    max={50}
-                  />
-                </div>
-
-                <div className="sdk-toggle">
-                  <span className="sdk-toggle-label">SDK:</span>
-                  <button
-                    type="button"
-                    className={`sdk-toggle-btn sdk-toggle-btn--python${searchMode === "python" ? " sdk-toggle-btn--active" : ""}`}
-                    onClick={() => handleModeChange("python")}
-                  >
-                    Python
-                  </button>
-                  <button
-                    type="button"
-                    className={`sdk-toggle-btn sdk-toggle-btn--js${searchMode === "js" ? " sdk-toggle-btn--active" : ""}`}
-                    onClick={() => handleModeChange("js")}
-                  >
-                    JS
-                  </button>
-                </div>
-              </div>
-            )}
+            <button
+              type="button"
+              className={`sdk-tab sdk-tab--js${searchMode === "js" ? " sdk-tab--active" : ""}`}
+              onClick={() => handleModeChange("js")}
+            >
+              <span className="sdk-tab-name">JS</span>
+              <span className="sdk-tab-sep">&middot;</span>
+              <span className="sdk-tab-desc">Express</span>
+            </button>
+            <button
+              type="button"
+              className={`sdk-tab sdk-tab--browser${searchMode === "browser" ? " sdk-tab--active" : ""}`}
+              onClick={() => handleModeChange("browser")}
+            >
+              <span className="sdk-tab-name">in-Browser</span>
+              <span className="sdk-tab-sep">&middot;</span>
+              <span className="sdk-tab-desc">Zero server calls</span>
+            </button>
           </div>
 
-          {/* Sample queries */}
-          {SAMPLE_QUERIES.length > 0 && (
-            <div className="sample-queries">
-              <button
-                type="button"
-                className="sample-queries-toggle"
-                onClick={() => setShowSamples(!showSamples)}
-              >
-                <span>Try a sample query</span>
-                <svg
-                  className={`chevron${showSamples ? ' chevron--open' : ''}`}
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="2,4 6,8 10,4" />
+          {/* Toggle pills — always centered, content expands below */}
+          <div className="inline-panel-toggles">
+            <button
+              type="button"
+              className={`inline-panel-toggle${activePanel === "samples" ? " inline-panel-toggle--active" : ""}`}
+              onClick={() => setActivePanel(activePanel === "samples" ? null : "samples")}
+            >
+              Sample Queries
+            </button>
+            <button
+              type="button"
+              className={`inline-panel-toggle${activePanel === "settings" ? " inline-panel-toggle--active" : ""}`}
+              onClick={() => setActivePanel(activePanel === "settings" ? null : "settings")}
+            >
+              Advanced Settings
+            </button>
+          </div>
+
+          {activePanel === "samples" && SAMPLE_QUERIES.length > 0 && (
+            <div className="scroll-fade-wrapper">
+              <div className="scroll-hint-arrow scroll-hint-arrow--left scroll-hint-arrow--hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
                 </svg>
-              </button>
-              {showSamples && (
-                <div className="sample-queries-list">
-                  {SAMPLE_QUERIES.map((query, index) => (
-                    <button
-                      key={query}
-                      type="button"
-                      className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                      onClick={() => handleSampleQueryClick(query)}
-                      disabled={searchDisabled}
-                      data-testid={`sample-query-${index}`}
-                    >
-                      {query}
-                    </button>
+              </div>
+              <div
+                className="inline-panel-content"
+                ref={(el) => {
+                  if (!el) return;
+                  const wrapper = el.parentElement;
+                  if (!wrapper) return;
+                  const leftArrow = wrapper.querySelector(".scroll-hint-arrow--left");
+                  const rightArrow = wrapper.querySelector(".scroll-hint-arrow--right");
+                  const updateArrows = () => {
+                    const atStart = el.scrollLeft <= 4;
+                    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+                    leftArrow?.classList.toggle("scroll-hint-arrow--hidden", atStart);
+                    rightArrow?.classList.toggle("scroll-hint-arrow--hidden", atEnd);
+                  };
+                  updateArrows();
+                  el.addEventListener("scroll", updateArrows, { passive: true });
+                }}
+              >
+                {SAMPLE_QUERIES.map((query, index) => (
+                  <button
+                    key={query}
+                    type="button"
+                    className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleSampleQueryClick(query)}
+                    disabled={searchDisabled}
+                    data-testid={`sample-query-${index}`}
+                  >
+                    {query}
+                  </button>
+                ))}
+              </div>
+              <div className="scroll-hint-arrow scroll-hint-arrow--right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
+          )}
+
+          {activePanel === "settings" && (
+            <div className="inline-panel-content">
+              <div className="tier-selector">
+                <label htmlFor="tier-select">Index:</label>
+                <select
+                  id="tier-select"
+                  className="tier-select"
+                  value={selectedTier}
+                  onChange={(e) => handleTierChange(e, searchMode)}
+                  disabled={indexState.loading}
+                  data-testid="tier-select"
+                >
+                  {TIERS.map((tier) => (
+                    <option key={tier.value} value={tier.value}>
+                      {tier.label}
+                    </option>
                   ))}
-                </div>
-              )}
+                </select>
+              </div>
+              <div className="topk-selector">
+                <label htmlFor="topk-input">Results:</label>
+                <input
+                  id="topk-input"
+                  type="number"
+                  className="topk-input"
+                  value={topKInput}
+                  onChange={(e) => setTopKInput(e.target.value)}
+                  onBlur={() => {
+                    const v = Math.max(1, Math.min(50, Number(topKInput) || 1));
+                    setTopK(v);
+                    setTopKInput(String(v));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  min={1}
+                  max={50}
+                />
+              </div>
             </div>
           )}
         </div>

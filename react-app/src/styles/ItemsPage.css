@@ -123,7 +123,7 @@
   background: var(--bg-surface);
   border-radius: 16px;
   border: 1px solid var(--border-subtle);
-  padding: 20px;
+  padding: 20px 20px 12px;
 }
 
 .search-input-row {
@@ -197,58 +197,197 @@
   border-color: var(--border-hover);
 }
 
-/* ========== SDK Toggle ========== */
-.sdk-toggle {
+/* ========== SDK Tab Bar ========== */
+.sdk-tabs {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  gap: 0;
+  margin-top: 8px;
+  padding-top: 0;
 }
 
-.sdk-toggle-label {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-  margin-right: 2px;
+.sdk-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 8px;
   white-space: nowrap;
 }
 
-.sdk-toggle-btn {
+.sdk-tab:hover {
+  background-color: var(--bg-elevated);
+}
+
+.sdk-tab-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.sdk-tab-sep {
+  color: var(--text-muted);
+  opacity: 0.3;
+  font-size: 0.78rem;
+}
+
+.sdk-tab-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.sdk-tab--active .sdk-tab-desc {
+  opacity: 0.75;
+}
+
+.sdk-tab--active .sdk-tab-sep {
+  opacity: 0.6;
+}
+
+/* Browser desc always pops */
+.sdk-tab--browser .sdk-tab-desc {
+  color: #4ade80;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+/* Python — blue */
+.sdk-tab--python.sdk-tab--active {
+  background-color: rgba(91, 155, 213, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(91, 155, 213, 0.3);
+}
+
+.sdk-tab--python.sdk-tab--active .sdk-tab-name {
+  color: #5b9bd5;
+}
+
+/* JS — yellow */
+.sdk-tab--js.sdk-tab--active {
+  background-color: rgba(232, 212, 77, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(232, 212, 77, 0.3);
+}
+
+.sdk-tab--js.sdk-tab--active .sdk-tab-name {
+  color: #e8d44d;
+}
+
+/* Browser — green */
+.sdk-tab--browser.sdk-tab--active {
+  background-color: rgba(74, 222, 128, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.3);
+}
+
+.sdk-tab--browser.sdk-tab--active .sdk-tab-name {
+  color: #4ade80;
+}
+
+/* ========== Controls Section ========== */
+/* ========== Inline Expandable Panels ========== */
+.inline-panel-toggles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.inline-panel-toggle {
   background: transparent;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   padding: 4px 10px;
   transition: border-color 0.2s, color 0.2s, background-color 0.2s;
-  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.sdk-toggle-btn:hover {
+.inline-panel-toggle:hover {
   border-color: var(--border-hover);
   color: var(--text-secondary);
 }
 
-/* Python — blue */
-.sdk-toggle-btn--python.sdk-toggle-btn--active {
-  border-color: #5b9bd5;
-  color: #5b9bd5;
-  background-color: rgba(91, 155, 213, 0.1);
+.inline-panel-toggle--active {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  background-color: var(--accent-green-dim);
 }
 
-/* JS — yellow */
-.sdk-toggle-btn--js.sdk-toggle-btn--active {
-  border-color: #e8d44d;
-  color: #e8d44d;
-  background-color: rgba(232, 212, 77, 0.1);
+.inline-panel-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-top: 10px;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge */
 }
 
-/* ========== Controls Section ========== */
-.controls-section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
+.inline-panel-content::-webkit-scrollbar {
+  display: none;                  /* Chrome/Safari */
+}
+
+/* Scroll hint wrapper */
+.scroll-fade-wrapper {
+  position: relative;
+  margin-top: 10px;
+}
+
+.scroll-fade-wrapper .inline-panel-content {
+  margin-top: 0;
+}
+
+.scroll-hint-arrow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 2;
+}
+
+/* Use flexbox on the SVG itself for centering the icon */
+.scroll-hint-arrow svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+}
+
+.scroll-hint-arrow--right {
+  right: 0;
+}
+
+.scroll-hint-arrow--left {
+  left: 0;
+}
+
+.scroll-hint-arrow--hidden {
+  opacity: 0;
 }
 
 .controls-toggle {
@@ -276,9 +415,9 @@
 .controls-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 /* ========== Tier Selector ========== */
@@ -420,15 +559,13 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 24px 20px 20px;
   box-sizing: border-box;
 }
 
 /* ========== Sample Queries ========== */
-.sample-queries {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
+.sample-queries-list {
+  margin-top: 8px;
 }
 
 .sample-queries-toggle {
@@ -468,7 +605,7 @@
 
 .sample-query-button {
   border: 1px solid var(--border-subtle);
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 7px 16px;
   font-size: 0.85rem;
   background-color: transparent;
@@ -478,6 +615,8 @@
   line-height: 1.3;
   opacity: 0;
   animation: stagger-fade-in 0.4s ease-out forwards;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .sample-query-button:hover {
@@ -644,9 +783,9 @@
 /* ========== Footer ========== */
 .site-footer {
   text-align: center;
-  padding: 24px 20px;
+  padding: 12px 20px;
   border-top: 1px solid var(--border-subtle);
-  margin-top: 40px;
+  margin-top: auto;
 }
 
 .site-footer p {
