@@ -16,7 +16,7 @@ import * as http from "http";
 import { execSync } from "child_process";
 
 const ANNOTATIONS_URL =
-  "http://images.cocodataset.org/annotations/annotations_trainval2017.zip";
+  "https://images.cocodataset.org/annotations/annotations_trainval2017.zip";
 const ANNOTATIONS_DIR = path.resolve(__dirname, "../annotations");
 const OUTPUT_DIR = path.resolve(__dirname, "..");
 const SEED = 42;
@@ -85,9 +85,22 @@ function downloadFile(url: string, dest: string): Promise<void> {
           response.statusCode < 400 &&
           response.headers.location
         ) {
+          const redirectUrl = response.headers.location;
+          // Prevent HTTPS-to-HTTP downgrade on redirect
+          if (url.startsWith("https://") && redirectUrl.startsWith("http://")) {
+            file.close();
+            if (fs.existsSync(dest)) fs.unlinkSync(dest);
+            reject(
+              new Error(
+                `Refusing to follow insecure redirect from HTTPS to HTTP: ${redirectUrl}`
+              )
+            );
+            return;
+          }
+
           file.close();
-          fs.unlinkSync(dest);
-          downloadFile(response.headers.location, dest)
+          if (fs.existsSync(dest)) fs.unlinkSync(dest);
+          downloadFile(redirectUrl, dest)
             .then(resolve)
             .catch(reject);
           return;
