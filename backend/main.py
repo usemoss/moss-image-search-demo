@@ -4,10 +4,13 @@ import asyncio
 import os
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
+import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from inferedge_moss import MossClient
 from moss_core import QueryOptions
 
@@ -23,6 +26,9 @@ CORS_ORIGINS = os.getenv(
 TOP_K_DEFAULT = 5
 
 client = MossClient(PROJECT_ID, PROJECT_KEY)
+_http_client = httpx.AsyncClient(follow_redirects=True, timeout=15.0)
+
+ALLOWED_IMAGE_HOSTS = {"images.cocodataset.org"}
 
 _loaded_indexes: set[str] = set()
 _index_locks: dict[str, asyncio.Lock] = {}
@@ -90,3 +96,23 @@ async def search(
         "docs": docs,
         "timeTakenInMs": result.time_taken_ms,
     }
+
+
+@app.get("/image-proxy")
+async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
+    parsed = urlparse(url)
+    if parsed.hostname not in ALLOWED_IMAGE_HOSTS:
+        raise HTTPException(status_code=403, detail="Host not allowed")
+
+    try:
+        resp = await _http_client.get(url)
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch image: {exc}") from exc
+
+    content_type = resp.headers.get("content-type", "image/jpeg")
+    return Response(
+        content=resp.content,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
