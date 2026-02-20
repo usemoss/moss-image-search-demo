@@ -18,7 +18,7 @@ export const mapRecordToGalleryItem = (record: QueryResultDocumentInfo): Gallery
   return {
     id: record.id,
     caption: record.text,
-    url: url.replace(/^http:\/\//, "https://"),
+    url,
     imageId: typeof metadata.image_id === "string" ? metadata.image_id : record.id,
   };
 };
