@@ -116,3 +116,10 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
         media_type=content_type,
         headers={"Cache-Control": "public, max-age=86400"},
     )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
