@@ -103,7 +103,7 @@ export const getSearchIndexLoadError = (): Error | null => indexLoadError;
 /**
  * Executes a hybrid search against the current tier's image index.
  */
-const PYTHON_API_BASE = (import.meta.env.MOSS_API_URL as string | undefined) ?? "http://localhost:8000";
+const PYTHON_API_BASE = (import.meta.env.MOSS_API_URL as string | undefined) || "http://localhost:8000";
 
 export const searchImagesViaPythonApi = async (
     term: string,
