@@ -156,7 +156,6 @@
 
 .search-input:focus {
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 4px var(--accent-green-dim);
   outline: none;
 }
 
@@ -456,7 +455,6 @@
 .tier-select:focus {
   outline: none;
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--accent-green-dim);
 }
 
 /* ========== Top-K Selector ========== */
@@ -500,7 +498,6 @@
 .topk-input:focus {
   outline: none;
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--accent-green-dim);
 }
 
 /* ========== Speed Badge (Hero) ========== */
@@ -623,13 +620,11 @@
   background-color: var(--bg-elevated);
   border-color: var(--border-hover);
   transform: translateY(-1px);
-  box-shadow: 0 0 12px var(--accent-green-dim);
 }
 
 .sample-query-button:focus-visible {
   outline: none;
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--accent-green-dim);
 }
 
 .sample-query-button:disabled {
