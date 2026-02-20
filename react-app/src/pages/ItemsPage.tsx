@@ -65,7 +65,7 @@ const ImageSearchPage = () => {
       error: error ? error.message : null,
     };
   });
-  const [searchMode, setSearchMode] = useState<SearchMode>("python");
+  const [searchMode, setSearchMode] = useState<SearchMode>("browser");
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
   const [activePanel, setActivePanel] = useState<"settings" | "samples" | null>(null);
