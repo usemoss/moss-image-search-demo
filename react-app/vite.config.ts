@@ -6,4 +6,7 @@ export default defineConfig({
   plugins: [react()],
   envDir: '../',
   envPrefix: 'MOSS_',
+  preview: {
+    allowedHosts: true,
+  },
 })
