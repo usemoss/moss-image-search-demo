@@ -28,7 +28,7 @@ const mossClient = new MossClient(
 );
 const baseIndexName: string = import.meta.env.MOSS_INDEX_NAME;
 
-let currentTier = "100k";
+let currentTier = "1k";
 let isIndexLoaded = false;
 let indexLoadPromise: Promise<void> | null = null;
 let indexLoadError: Error | null = null;
