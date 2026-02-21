@@ -68,7 +68,6 @@ const ImageSearchPage = () => {
   const [searchMode, setSearchMode] = useState<SearchMode>("browser");
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
-  const [activePanel, setActivePanel] = useState<"settings" | "samples" | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const hasAutoQueried = useRef(false);
   const trimmedTerm = searchTerm.trim();
@@ -310,104 +309,9 @@ const ImageSearchPage = () => {
             </div>
           </div>
 
-          {/* SDK mode tab bar */}
-          <div className="sdk-tabs">
-            <button
-              type="button"
-              className={`sdk-tab sdk-tab--python${searchMode === "python" ? " sdk-tab--active" : ""}`}
-              onClick={() => handleModeChange("python")}
-            >
-              <span className="sdk-tab-name">Python</span>
-              <span className="sdk-tab-sep">&middot;</span>
-              <span className="sdk-tab-desc">FastAPI</span>
-            </button>
-            <button
-              type="button"
-              className={`sdk-tab sdk-tab--js${searchMode === "js" ? " sdk-tab--active" : ""}`}
-              onClick={() => handleModeChange("js")}
-            >
-              <span className="sdk-tab-name">JS</span>
-              <span className="sdk-tab-sep">&middot;</span>
-              <span className="sdk-tab-desc">Express</span>
-            </button>
-            <button
-              type="button"
-              className={`sdk-tab sdk-tab--browser${searchMode === "browser" ? " sdk-tab--active" : ""}`}
-              onClick={() => handleModeChange("browser")}
-            >
-              <span className="sdk-tab-name">in-Browser</span>
-              <span className="sdk-tab-sep">&middot;</span>
-              <span className="sdk-tab-desc">Zero server calls</span>
-            </button>
-          </div>
-
-          {/* Toggle pills — always centered, content expands below */}
-          <div className="inline-panel-toggles">
-            <button
-              type="button"
-              className={`inline-panel-toggle${activePanel === "samples" ? " inline-panel-toggle--active" : ""}`}
-              onClick={() => setActivePanel(activePanel === "samples" ? null : "samples")}
-            >
-              Sample Queries
-            </button>
-            <button
-              type="button"
-              className={`inline-panel-toggle${activePanel === "settings" ? " inline-panel-toggle--active" : ""}`}
-              onClick={() => setActivePanel(activePanel === "settings" ? null : "settings")}
-            >
-              Advanced Settings
-            </button>
-          </div>
-
-          {activePanel === "samples" && SAMPLE_QUERIES.length > 0 && (
-            <div className="scroll-fade-wrapper">
-              <div className="scroll-hint-arrow scroll-hint-arrow--left scroll-hint-arrow--hidden">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </div>
-              <div
-                className="inline-panel-content"
-                ref={(el) => {
-                  if (!el) return;
-                  const wrapper = el.parentElement;
-                  if (!wrapper) return;
-                  const leftArrow = wrapper.querySelector(".scroll-hint-arrow--left");
-                  const rightArrow = wrapper.querySelector(".scroll-hint-arrow--right");
-                  const updateArrows = () => {
-                    const atStart = el.scrollLeft <= 4;
-                    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-                    leftArrow?.classList.toggle("scroll-hint-arrow--hidden", atStart);
-                    rightArrow?.classList.toggle("scroll-hint-arrow--hidden", atEnd);
-                  };
-                  updateArrows();
-                  el.addEventListener("scroll", updateArrows, { passive: true });
-                }}
-              >
-                {SAMPLE_QUERIES.map((query, index) => (
-                  <button
-                    key={query}
-                    type="button"
-                    className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => handleSampleQueryClick(query)}
-                    disabled={searchDisabled}
-                    data-testid={`sample-query-${index}`}
-                  >
-                    {query}
-                  </button>
-                ))}
-              </div>
-              <div className="scroll-hint-arrow scroll-hint-arrow--right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </div>
-            </div>
-          )}
-
-          {activePanel === "settings" && (
-            <div className="inline-panel-content">
+          {/* Controls row — settings left, SDK tabs right */}
+          <div className="controls-row">
+            <div className="controls-left">
               <div className="tier-selector">
                 <label htmlFor="tier-select">Index:</label>
                 <select
@@ -447,6 +351,49 @@ const ImageSearchPage = () => {
                   max={50}
                 />
               </div>
+            </div>
+            <div className="sdk-tabs">
+              <label className="sdk-tabs-label">Mode:</label>
+              <button
+                type="button"
+                className={`sdk-tab sdk-tab--python${searchMode === "python" ? " sdk-tab--active" : ""}`}
+                onClick={() => handleModeChange("python")}
+              >
+                <span className="sdk-tab-name">Python</span>
+              </button>
+              <button
+                type="button"
+                className={`sdk-tab sdk-tab--js${searchMode === "js" ? " sdk-tab--active" : ""}`}
+                onClick={() => handleModeChange("js")}
+              >
+                <span className="sdk-tab-name">JS</span>
+              </button>
+              <button
+                type="button"
+                className={`sdk-tab sdk-tab--browser${searchMode === "browser" ? " sdk-tab--active" : ""}`}
+                onClick={() => handleModeChange("browser")}
+              >
+                <span className="sdk-tab-name">in-Browser</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Sample queries — wrapping rows */}
+          {SAMPLE_QUERIES.length > 0 && (
+            <div className="sample-queries-wrap">
+              {SAMPLE_QUERIES.map((query, index) => (
+                <button
+                  key={query}
+                  type="button"
+                  className={`sample-query-button${activeSampleQuery === query ? " sample-query-button--active" : ""}`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  onClick={() => handleSampleQueryClick(query)}
+                  disabled={searchDisabled}
+                  data-testid={`sample-query-${index}`}
+                >
+                  {query}
+                </button>
+              ))}
             </div>
           )}
         </div>

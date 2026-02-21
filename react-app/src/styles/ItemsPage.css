@@ -199,9 +199,16 @@
 /* ========== SDK Tab Bar ========== */
 .sdk-tabs {
   display: flex;
-  gap: 0;
-  margin-top: 8px;
-  padding-top: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.sdk-tabs-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-right: 6px;
 }
 
 .sdk-tab {
@@ -222,6 +229,14 @@
 
 .sdk-tab:hover {
   background-color: var(--bg-elevated);
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.sdk-tab:focus,
+.sdk-tab:focus-visible {
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .sdk-tab-name {
@@ -263,7 +278,6 @@
 /* Python — blue */
 .sdk-tab--python.sdk-tab--active {
   background-color: rgba(91, 155, 213, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(91, 155, 213, 0.3);
 }
 
 .sdk-tab--python.sdk-tab--active .sdk-tab-name {
@@ -273,7 +287,6 @@
 /* JS — yellow */
 .sdk-tab--js.sdk-tab--active {
   background-color: rgba(232, 212, 77, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(232, 212, 77, 0.3);
 }
 
 .sdk-tab--js.sdk-tab--active .sdk-tab-name {
@@ -283,7 +296,6 @@
 /* Browser — green */
 .sdk-tab--browser.sdk-tab--active {
   background-color: rgba(74, 222, 128, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.3);
 }
 
 .sdk-tab--browser.sdk-tab--active .sdk-tab-name {
@@ -414,9 +426,17 @@
 .controls-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 8px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* ========== Tier Selector ========== */
@@ -561,6 +581,15 @@
 }
 
 /* ========== Sample Queries ========== */
+.sample-queries-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
 .sample-queries-list {
   margin-top: 8px;
 }
@@ -612,8 +641,6 @@
   line-height: 1.3;
   opacity: 0;
   animation: stagger-fade-in 0.4s ease-out forwards;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .sample-query-button:hover {
@@ -925,6 +952,14 @@
   .controls-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .controls-left {
+    justify-content: center;
+  }
+
+  .sdk-tabs {
+    justify-content: center;
   }
 
   .masonry-grid {
