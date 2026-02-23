@@ -353,7 +353,7 @@ const ImageSearchPage = () => {
               </div>
             </div>
             <div className="sdk-tabs">
-              <label className="sdk-tabs-label">Mode:</label>
+              {/*<label className="sdk-tabs-label">Mode:</label>
               <button
                 type="button"
                 className={`sdk-tab sdk-tab--python${searchMode === "python" ? " sdk-tab--active" : ""}`}
@@ -361,7 +361,7 @@ const ImageSearchPage = () => {
               >
                 <span className="sdk-tab-name">Python</span>
               </button>
-              {/* <button
+              <button
                 type="button"
                 className={`sdk-tab sdk-tab--js${searchMode === "js" ? " sdk-tab--active" : ""}`}
                 onClick={() => handleModeChange("js")}
