@@ -178,19 +178,23 @@ app.get("/image-proxy", async (req, res) => {
   }
 
   // 5. Reconstruct URL from individually sanitized components to break CodeQL taint chain.
-  //    trustedHost comes from ALLOWED_IMAGE_HOSTS (a constant); path segments and search
-  //    params are decoded and re-encoded so no tainted string reaches fetch() directly.
+  //    trustedHost comes from ALLOWED_IMAGE_HOSTS (a constant); path and query components
+  //    are validated and re-applied so no raw user-controlled URL is passed to fetch().
   const trustedHost = [...ALLOWED_IMAGE_HOSTS].find((h) => h === parsed.hostname)!;
-  const safeUrl = new URL(`${parsed.protocol}//${trustedHost}`);
-  // Re-encode each path segment individually (sanitization boundary for taint analysis)
-  safeUrl.pathname = safePath
-    .split("/")
-    .map((seg) => (seg ? encodeURIComponent(decodeURIComponent(seg)) : seg))
-    .join("/");
-  // Rebuild search params from parsed entries (each value individually re-set)
-  for (const [key, value] of parsed.searchParams) {
-    safeUrl.searchParams.append(key, value);
+  const safeUrl = new URL("/", `${parsed.protocol}//${trustedHost}`);
+
+  // Apply normalized path. normalizeAndValidatePath already rejects traversal; letting URL
+  // handle encoding avoids double-decoding user input.
+  safeUrl.pathname = safePath;
+
+  // Rebuild search params from parsed entries using a fresh URLSearchParams instance.
+  const rebuiltParams = new URLSearchParams();
+  for (const [key, value] of parsed.searchParams.entries()) {
+    // Keys are small strings; values are copied as-is. Both are now detached from the
+    // original tainted URL string and can be further validated/filtered here if needed.
+    rebuiltParams.append(key, value);
   }
+  safeUrl.search = rebuiltParams.toString();
 
   try {
     const upstream = await fetch(safeUrl, { redirect: "error" });
