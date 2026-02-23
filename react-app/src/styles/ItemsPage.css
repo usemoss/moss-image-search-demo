@@ -156,6 +156,7 @@
 
 .search-input:focus {
   border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--accent-green-dim);
   outline: none;
 }
 
@@ -194,112 +195,6 @@
 .powered-by:hover {
   transform: translateY(-50%) scale(1.03);
   border-color: var(--border-hover);
-}
-
-/* ========== SDK Tab Bar ========== */
-.sdk-tabs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sdk-tabs-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  white-space: nowrap;
-  margin-right: 6px;
-}
-
-.sdk-tab {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 6px 6px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-radius: 8px;
-  white-space: nowrap;
-}
-
-.sdk-tab:hover {
-  background-color: var(--bg-elevated);
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.sdk-tab:focus,
-.sdk-tab:focus-visible {
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.sdk-tab-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: color 0.2s;
-}
-
-.sdk-tab-sep {
-  color: var(--text-muted);
-  opacity: 0.3;
-  font-size: 0.78rem;
-}
-
-.sdk-tab-desc {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  opacity: 0.45;
-  transition: opacity 0.2s;
-}
-
-.sdk-tab--active .sdk-tab-desc {
-  opacity: 0.75;
-}
-
-.sdk-tab--active .sdk-tab-sep {
-  opacity: 0.6;
-}
-
-/* Browser desc always pops */
-.sdk-tab--browser .sdk-tab-desc {
-  color: #4ade80;
-  opacity: 0.85;
-  font-weight: 600;
-}
-
-/* Python — blue */
-.sdk-tab--python.sdk-tab--active {
-  background-color: rgba(91, 155, 213, 0.08);
-}
-
-.sdk-tab--python.sdk-tab--active .sdk-tab-name {
-  color: #5b9bd5;
-}
-
-/* JS — yellow */
-.sdk-tab--js.sdk-tab--active {
-  background-color: rgba(232, 212, 77, 0.08);
-}
-
-.sdk-tab--js.sdk-tab--active .sdk-tab-name {
-  color: #e8d44d;
-}
-
-/* Browser — green */
-.sdk-tab--browser.sdk-tab--active {
-  background-color: rgba(74, 222, 128, 0.08);
-}
-
-.sdk-tab--browser.sdk-tab--active .sdk-tab-name {
-  color: #4ade80;
 }
 
 /* ========== Controls Section ========== */
@@ -426,7 +321,7 @@
 .controls-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   margin-top: 10px;
   padding-top: 10px;
@@ -437,6 +332,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.sdk-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #5b9bd5;
+  background: rgba(91, 155, 213, 0.1);
+  border: 1px solid rgba(91, 155, 213, 0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 /* ========== Tier Selector ========== */
@@ -527,10 +435,16 @@
   justify-content: center;
   gap: 10px;
   margin: 20px auto 0;
-  padding: 8px 0;
+  padding: 10px 24px;
+  width: fit-content;
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
   color: var(--accent-green);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
 }
 
 .speed-badge-hero .speed-badge-dot {
@@ -790,7 +704,7 @@
 
 .skeleton-card {
   height: 200px;
-  border-radius: 0;
+  border-radius: 12px;
   background: linear-gradient(
     90deg,
     var(--bg-surface) 25%,
@@ -835,7 +749,7 @@
 }
 
 .masonry-card {
-  border-radius: 0;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -844,8 +758,9 @@
   color: inherit;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.35s ease, transform 0.25s ease;
 }
 
 /* Progressive enhancement: fade-in on scroll */
@@ -859,7 +774,8 @@
 
 .masonry-card:hover {
   border-color: var(--accent-green);
-  box-shadow: 0 0 20px var(--accent-green-dim);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 20px var(--accent-green-dim);
+  transform: translateY(-2px);
 }
 
 .masonry-card img {
@@ -867,7 +783,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 0;
+  border-radius: 12px;
   transition: transform 0.3s ease;
 }
 
@@ -955,10 +871,6 @@
   }
 
   .controls-left {
-    justify-content: center;
-  }
-
-  .sdk-tabs {
     justify-content: center;
   }
 

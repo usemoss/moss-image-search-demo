@@ -30,19 +30,12 @@ uv sync
 uvicorn main:app --reload
 ```
 
-**4. Start the JS backend** (in another terminal):
-```bash
-cd backend-js && npm install && npm run dev
-```
-
-**5. Start the React app** (in another terminal):
+**4. Start the React app** (in another terminal):
 ```bash
 cd react-app && npm install && npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) and start searching.
-
-> The app supports three search modes — **Python** (FastAPI on port 8000), **JS** (Express on port 8001), and **in-Browser** (zero server calls) — switch between them using the SDK tabs in the search bar.
 
 ---
 
@@ -104,7 +97,7 @@ Go into either the `setup-js` or `setup-py` folder and follow the instructions.
 7. Run `python create_all_indexes.py` to create indexes for all tiers.
 8. Run `python query.py` to load the index and run sample queries.
 
-## 4. Backend (optional)
+## 4. Backend
 
 A FastAPI backend is included in the `backend-py` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client.
 

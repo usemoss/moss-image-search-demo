@@ -5,7 +5,6 @@ interface ImportMetaEnv {
   readonly MOSS_PROJECT_KEY: string;
   readonly MOSS_INDEX_NAME: string;
   readonly MOSS_PYTHON_API_URL?: string;
-  readonly MOSS_JS_API_URL?: string;
 }
 
 interface ImportMeta {

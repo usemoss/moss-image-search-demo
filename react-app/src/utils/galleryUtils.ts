@@ -1,4 +1,4 @@
-import { QueryResultDocumentInfo } from "@inferedge/moss";
+import { QueryResultDocumentInfo } from "./searchUtils";
 
 export interface GalleryItem {
   readonly id: string;

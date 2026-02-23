@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { QueryResultDocumentInfo } from "@inferedge/moss";
+import { QueryResultDocumentInfo } from "../utils/searchUtils";
 import { GalleryItem, mapRecordToGalleryItem } from "../utils/galleryUtils";
 import "../styles/ItemDetailPage.css";
 

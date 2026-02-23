@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { QueryResultDocumentInfo } from "@inferedge/moss";
+import { QueryResultDocumentInfo } from "../utils/searchUtils";
 import {
   searchImagesViaPythonApi,
   checkPythonApiHealth,
@@ -235,7 +235,7 @@ const ImageSearchPage = () => {
             </div>
           </div>
 
-          {/* Controls row — settings left, SDK tabs right */}
+          {/* Controls row — settings and SDK badge */}
           <div className="controls-row">
             <div className="controls-left">
               <div className="tier-selector">
@@ -277,6 +277,7 @@ const ImageSearchPage = () => {
                   max={50}
                 />
               </div>
+              <span className="sdk-badge">Python SDK</span>
             </div>
           </div>
 
