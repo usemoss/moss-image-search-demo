@@ -8,7 +8,6 @@ import Favicon from "./components/Favicon";
 
 function App() {
   useEffect(() => {
-    // Initialize search index directly without worker
     initializeSearchIndex().catch((error) => {
       console.error("Failed to load search index:", error);
     });
@@ -24,9 +23,6 @@ function App() {
             <Route path="/image/:id" element={<ImageDetailPage />} />
           </Routes>
         </main>
-        <footer>
-          <p>© 2025 MOSS Image Search Demo</p>
-        </footer>
       </div>
     </Router>
   );
