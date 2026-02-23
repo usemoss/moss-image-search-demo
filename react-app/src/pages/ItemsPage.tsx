@@ -277,7 +277,7 @@ const ImageSearchPage = () => {
                   max={50}
                 />
               </div>
-              <span className="sdk-badge">Python SDK</span>
+
             </div>
           </div>
 

@@ -4,7 +4,7 @@ export interface QueryResultDocumentInfo {
     readonly metadata: Record<string, string>;
 }
 
-export interface SearchImagesResponse {
+interface SearchImagesResponse {
     readonly results: QueryResultDocumentInfo[];
     readonly timeTakenInMs: number;
     readonly status: "fulfilled" | "rejected";

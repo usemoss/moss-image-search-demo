@@ -197,126 +197,6 @@
   border-color: var(--border-hover);
 }
 
-/* ========== Controls Section ========== */
-/* ========== Inline Expandable Panels ========== */
-.inline-panel-toggles {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.inline-panel-toggle {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 4px 10px;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.inline-panel-toggle:hover {
-  border-color: var(--border-hover);
-  color: var(--text-secondary);
-}
-
-.inline-panel-toggle--active {
-  border-color: var(--accent-green);
-  color: var(--accent-green);
-  background-color: var(--accent-green-dim);
-}
-
-.inline-panel-content {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  margin-top: 10px;
-  scrollbar-width: none;          /* Firefox */
-  -ms-overflow-style: none;       /* IE/Edge */
-}
-
-.inline-panel-content::-webkit-scrollbar {
-  display: none;                  /* Chrome/Safari */
-}
-
-/* Scroll hint wrapper */
-.scroll-fade-wrapper {
-  position: relative;
-  margin-top: 10px;
-}
-
-.scroll-fade-wrapper .inline-panel-content {
-  margin-top: 0;
-}
-
-.scroll-hint-arrow {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 28px;
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  pointer-events: none;
-  transition: opacity 0.25s;
-  z-index: 2;
-}
-
-/* Use flexbox on the SVG itself for centering the icon */
-.scroll-hint-arrow svg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 14px;
-  height: 14px;
-}
-
-.scroll-hint-arrow--right {
-  right: 0;
-}
-
-.scroll-hint-arrow--left {
-  left: 0;
-}
-
-.scroll-hint-arrow--hidden {
-  opacity: 0;
-}
-
-.controls-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 10px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.controls-toggle:hover {
-  color: var(--text-secondary);
-}
-
 /* ========== Controls Row ========== */
 .controls-row {
   display: flex;
@@ -332,19 +212,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.sdk-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #5b9bd5;
-  background: rgba(91, 155, 213, 0.1);
-  border: 1px solid rgba(91, 155, 213, 0.2);
-  border-radius: 999px;
-  padding: 4px 12px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
 }
 
 /* ========== Tier Selector ========== */
@@ -468,6 +335,14 @@
   opacity: 0.7;
 }
 
+.speed-badge-hero.speed-badge--green {
+  color: var(--accent-green);
+}
+
+.speed-badge-hero.speed-badge--green .speed-badge-dot {
+  background-color: var(--accent-green);
+}
+
 .speed-badge-hero.speed-badge--yellow {
   color: var(--accent-amber);
 }
@@ -502,45 +377,6 @@
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
-}
-
-.sample-queries-list {
-  margin-top: 8px;
-}
-
-.sample-queries-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 10px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.sample-queries-toggle:hover {
-  color: var(--text-secondary);
-}
-
-.chevron {
-  transition: transform 0.2s;
-}
-
-.chevron--open {
-  transform: rotate(180deg);
-}
-
-.sample-queries-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .sample-query-button {
