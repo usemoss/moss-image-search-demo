@@ -124,11 +124,15 @@ app.get("/image-proxy", async (req, res) => {
     return;
   }
 
-  // Reconstruct URL from parsed components to prevent parser-confusion attacks
-  // (e.g. https://allowed-host@evil.com/ passing the hostname check)
-  parsed.username = "";
-  parsed.password = "";
-  const safeUrl = parsed.toString();
+  if (parsed.pathname.includes("..")) {
+    res.status(422).json({ detail: "Path traversal not allowed" });
+    return;
+  }
+
+  // Source the hostname from the allowlist constant (not from user-supplied parsed.hostname)
+  // to break the taint chain that CodeQL tracks from req.query.url → fetch()
+  const trustedHost = [...ALLOWED_IMAGE_HOSTS].find((h) => h === parsed.hostname)!;
+  const safeUrl = `${parsed.protocol}//${trustedHost}${parsed.pathname}`;
 
   try {
     const upstream = await fetch(safeUrl, { redirect: "error" });

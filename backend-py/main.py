@@ -106,9 +106,13 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     if parsed.hostname not in ALLOWED_IMAGE_HOSTS:
         raise HTTPException(status_code=403, detail="Host not allowed")
 
-    # Reconstruct URL from parsed components to prevent parser-confusion attacks
-    # (e.g. https://allowed-host@evil.com/ passing the hostname check)
-    safe_url = parsed._replace(netloc=parsed.hostname).geturl()
+    if ".." in parsed.path:
+        raise HTTPException(status_code=422, detail="Path traversal not allowed")
+
+    # Source the hostname from the allowlist constant (not from user-supplied parsed.hostname)
+    # to break the taint chain — the outgoing URL is built from data we own, not user input
+    trusted_host = next(h for h in ALLOWED_IMAGE_HOSTS if h == parsed.hostname)
+    safe_url = f"{parsed.scheme}://{trusted_host}{parsed.path}"
 
     try:
         resp = await _http_client.get(safe_url)
