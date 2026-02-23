@@ -177,10 +177,20 @@ app.get("/image-proxy", async (req, res) => {
     return;
   }
 
-  // 5. Reconstruct URL entirely from server-controlled values — trustedHost comes from
-  //    ALLOWED_IMAGE_HOSTS (a constant), breaking the taint chain CodeQL tracks from req.query
+  // 5. Reconstruct URL from individually sanitized components to break CodeQL taint chain.
+  //    trustedHost comes from ALLOWED_IMAGE_HOSTS (a constant); path segments and search
+  //    params are decoded and re-encoded so no tainted string reaches fetch() directly.
   const trustedHost = [...ALLOWED_IMAGE_HOSTS].find((h) => h === parsed.hostname)!;
-  const safeUrl = new URL(safePath + parsed.search, `${parsed.protocol}//${trustedHost}`);
+  const safeUrl = new URL(`${parsed.protocol}//${trustedHost}`);
+  // Re-encode each path segment individually (sanitization boundary for taint analysis)
+  safeUrl.pathname = safePath
+    .split("/")
+    .map((seg) => (seg ? encodeURIComponent(decodeURIComponent(seg)) : seg))
+    .join("/");
+  // Rebuild search params from parsed entries (each value individually re-set)
+  for (const [key, value] of parsed.searchParams) {
+    safeUrl.searchParams.append(key, value);
+  }
 
   try {
     const upstream = await fetch(safeUrl, { redirect: "error" });
