@@ -1,15 +1,8 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QueryResultDocumentInfo } from "@inferedge/moss";
 import {
-  searchImages,
   searchImagesViaPythonApi,
-  searchImagesViaJsApi,
   checkPythonApiHealth,
-  checkJsApiHealth,
-  initializeSearchIndex,
-  isSearchIndexLoaded,
-  getSearchIndexLoadError,
-  switchIndex,
   getCurrentTier,
   getCurrentTierInfo,
   TIERS,
@@ -30,8 +23,6 @@ interface IndexState {
   loading: boolean;
   error: string | null;
 }
-
-type SearchMode = "browser" | "python" | "js";
 
 const SAMPLE_QUERIES: readonly string[] = [
   "a dog catching a frisbee in mid-air",
@@ -56,16 +47,11 @@ const ImageSearchPage = () => {
   const [tierInfo, setTierInfo] = useState<TierInfo>(getCurrentTierInfo());
   const [activeSampleQuery, setActiveSampleQuery] = useState<string | null>(null);
   const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
-  const [indexState, setIndexState] = useState<IndexState>(() => {
-    const loaded = isSearchIndexLoaded();
-    const error = getSearchIndexLoadError();
-    return {
-      loaded,
-      loading: !loaded && !error,
-      error: error ? error.message : null,
-    };
+  const [indexState, setIndexState] = useState<IndexState>({
+    loaded: false,
+    loading: true,
+    error: null,
   });
-  const [searchMode, setSearchMode] = useState<SearchMode>("python");
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,56 +65,24 @@ const ImageSearchPage = () => {
     let isCancelled = false;
     setIndexState((prev) => ({ ...prev, loading: true, error: null }));
 
-    if (searchMode === "python") {
-      checkPythonApiHealth().then((ok) => {
-        if (!isCancelled) {
-          if (ok) {
-            setIndexState({ loaded: true, loading: false, error: null });
-          } else {
-            setIndexState({
-              loaded: false,
-              loading: false,
-              error: `Python backend unreachable at ${import.meta.env.MOSS_PYTHON_API_URL ?? "http://localhost:8000"}`,
-            });
-          }
+    checkPythonApiHealth().then((ok) => {
+      if (!isCancelled) {
+        if (ok) {
+          setIndexState({ loaded: true, loading: false, error: null });
+        } else {
+          setIndexState({
+            loaded: false,
+            loading: false,
+            error: `Python backend unreachable at ${import.meta.env.MOSS_PYTHON_API_URL ?? "http://localhost:8000"}`,
+          });
         }
-      });
-    } else if (searchMode === "js") {
-      checkJsApiHealth().then((ok) => {
-        if (!isCancelled) {
-          if (ok) {
-            setIndexState({ loaded: true, loading: false, error: null });
-          } else {
-            setIndexState({
-              loaded: false,
-              loading: false,
-              error: `JS backend unreachable at ${import.meta.env.MOSS_JS_API_URL ?? "http://localhost:8001"}`,
-            });
-          }
-        }
-      });
-    } else {
-      initializeSearchIndex()
-        .then(() => {
-          if (!isCancelled) {
-            setIndexState({ loaded: true, loading: false, error: null });
-          }
-        })
-        .catch((error) => {
-          if (!isCancelled) {
-            setIndexState({
-              loaded: false,
-              loading: false,
-              error: error instanceof Error ? error.message : String(error),
-            });
-          }
-        });
-    }
+      }
+    });
 
     return () => {
       isCancelled = true;
     };
-  }, [indexState.loaded, searchMode]);
+  }, [indexState.loaded]);
 
   // Auto-run first sample query when index loads
   useEffect(() => {
@@ -161,11 +115,7 @@ const ImageSearchPage = () => {
       setIsSearching(true);
       try {
         const { results, timeTakenInMs, status, errorMessage } =
-          searchMode === "python"
-            ? await searchImagesViaPythonApi(trimmedTerm, selectedTier, topK)
-            : searchMode === "js"
-              ? await searchImagesViaJsApi(trimmedTerm, selectedTier, topK)
-              : await searchImages(trimmedTerm, topK);
+          await searchImagesViaPythonApi(trimmedTerm, selectedTier, topK);
         if (!isCancelled) {
           setSearchResults(results);
           setQueryMetadata({ timeTakenInMs, status, errorMessage });
@@ -192,7 +142,7 @@ const ImageSearchPage = () => {
     return () => {
       isCancelled = true;
     };
-  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded, searchMode, selectedTier, topK]);
+  }, [hasQuery, trimmedTerm, indexState.error, indexState.loaded, selectedTier, topK]);
 
   const galleryItems = useMemo(() => {
     if (!hasQuery) return [];
@@ -223,36 +173,12 @@ const ImageSearchPage = () => {
     setActiveSampleQuery(null);
   }, []);
 
-  const handleModeChange = useCallback((mode: SearchMode) => {
-    setSearchMode(mode);
-    setIndexState({ loaded: false, loading: false, error: null });
-    setSearchResults([]);
-    setQueryMetadata(null);
-    hasAutoQueried.current = false;
-  }, []);
-
-  const handleTierChange = useCallback(async (event: ChangeEvent<HTMLSelectElement>, currentMode: SearchMode) => {
+  const handleTierChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const newTier = event.target.value;
     setSelectedTier(newTier);
     setTierInfo(TIERS.find((t) => t.value === newTier) ?? TIERS[0]);
     setSearchResults([]);
     setQueryMetadata(null);
-
-    if (currentMode === "python" || currentMode === "js") {
-      return;
-    }
-
-    setIndexState({ loaded: false, loading: true, error: null });
-    try {
-      await switchIndex(newTier);
-      setIndexState({ loaded: true, loading: false, error: null });
-    } catch (error) {
-      setIndexState({
-        loaded: false,
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
   }, []);
 
   const handleRetryInitialization = useCallback(() => {
@@ -318,7 +244,7 @@ const ImageSearchPage = () => {
                   id="tier-select"
                   className="tier-select"
                   value={selectedTier}
-                  onChange={(e) => handleTierChange(e, searchMode)}
+                  onChange={handleTierChange}
                   disabled={indexState.loading}
                   data-testid="tier-select"
                 >
@@ -351,30 +277,6 @@ const ImageSearchPage = () => {
                   max={50}
                 />
               </div>
-            </div>
-            <div className="sdk-tabs">
-              {/*<label className="sdk-tabs-label">Mode:</label>
-              <button
-                type="button"
-                className={`sdk-tab sdk-tab--python${searchMode === "python" ? " sdk-tab--active" : ""}`}
-                onClick={() => handleModeChange("python")}
-              >
-                <span className="sdk-tab-name">Python</span>
-              </button>
-              <button
-                type="button"
-                className={`sdk-tab sdk-tab--js${searchMode === "js" ? " sdk-tab--active" : ""}`}
-                onClick={() => handleModeChange("js")}
-              >
-                <span className="sdk-tab-name">JS</span>
-              </button>
-              <button
-                type="button"
-                className={`sdk-tab sdk-tab--browser${searchMode === "browser" ? " sdk-tab--active" : ""}`}
-                onClick={() => handleModeChange("browser")}
-              >
-                <span className="sdk-tab-name">in-Browser</span>
-              </button> */}
             </div>
           </div>
 
