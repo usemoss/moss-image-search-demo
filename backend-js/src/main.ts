@@ -1,8 +1,10 @@
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { lookup as dnsLookup } from "node:dns/promises";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import ipaddr from "ipaddr.js";
 import { MossClient } from "@inferedge/moss";
 
 // Load .env from project root (two levels up from src/)
@@ -48,6 +50,42 @@ async function ensureIndexLoaded(indexName: string): Promise<void> {
 
   inflightLoads.set(indexName, loadPromise);
   return loadPromise;
+}
+
+// Returns true if any resolved address for the hostname is loopback, private,
+// link-local, or unique-local (IPv6). Rejects outright if DNS fails.
+async function isPrivateOrLoopback(hostname: string): Promise<boolean> {
+  const BLOCKED_RANGES = new Set([
+    "loopback",
+    "private",
+    "linkLocal",
+    "uniqueLocal",
+    "unspecified",
+    "reserved",
+  ]);
+  let addresses: { address: string }[];
+  try {
+    addresses = await dnsLookup(hostname, { all: true });
+  } catch {
+    return true; // can't resolve → treat as unsafe
+  }
+  for (const { address } of addresses) {
+    try {
+      const ip = ipaddr.parse(address);
+      if (BLOCKED_RANGES.has(ip.range())) return true;
+    } catch {
+      return true; // unparseable address → treat as unsafe
+    }
+  }
+  return false;
+}
+
+// Normalizes a URL path using POSIX rules and rejects traversal attempts.
+// Returns the normalized path, or null if it escapes the root.
+function normalizeAndValidatePath(rawPath: string): string | null {
+  const normalized = path.posix.normalize(rawPath);
+  if (normalized.startsWith("..") || normalized === "..") return null;
+  return normalized;
 }
 
 const app = express();
@@ -114,35 +152,35 @@ app.get("/image-proxy", async (req, res) => {
     return;
   }
 
+  // 1. Scheme must be http or https (blocks file://, gopher://, etc.)
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     res.status(422).json({ detail: "Only HTTP(S) URLs are allowed" });
     return;
   }
 
+  // 2. Hostname must be in the server-controlled allowlist
   if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
     res.status(403).json({ detail: "Host not allowed" });
     return;
   }
 
-  if (parsed.pathname.includes("..")) {
+  // 3. Resolve DNS and reject loopback / private / link-local addresses
+  if (await isPrivateOrLoopback(parsed.hostname)) {
+    res.status(403).json({ detail: "Host resolves to a disallowed address" });
+    return;
+  }
+
+  // 4. Normalize path and reject traversal (handles encoded variants after URL constructor decodes)
+  const safePath = normalizeAndValidatePath(parsed.pathname);
+  if (safePath === null) {
     res.status(422).json({ detail: "Path traversal not allowed" });
     return;
   }
 
-  // Reconstruct URL from trusted, server-controlled values only:
-  // - trustedHost comes from ALLOWED_IMAGE_HOSTS (a server constant), breaking the taint chain
-  // - the URL constructor normalizes the result; only pathname+search are taken from user input
+  // 5. Reconstruct URL entirely from server-controlled values — trustedHost comes from
+  //    ALLOWED_IMAGE_HOSTS (a constant), breaking the taint chain CodeQL tracks from req.query
   const trustedHost = [...ALLOWED_IMAGE_HOSTS].find((h) => h === parsed.hostname)!;
-  const safeUrl = new URL(
-    parsed.pathname + parsed.search,
-    `${parsed.protocol}//${trustedHost}`
-  );
-
-  // Re-validate after URL normalization in case the constructor resolved traversal sequences
-  if (safeUrl.pathname.includes("..")) {
-    res.status(422).json({ detail: "Path traversal not allowed" });
-    return;
-  }
+  const safeUrl = new URL(safePath + parsed.search, `${parsed.protocol}//${trustedHost}`);
 
   try {
     const upstream = await fetch(safeUrl, { redirect: "error" });

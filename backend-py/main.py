@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import os
+import posixpath
+import socket
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -47,6 +50,33 @@ async def _ensure_index_loaded(index_name: str) -> None:
         if index_name not in _loaded_indexes:
             await client.load_index(index_name)
             _loaded_indexes.add(index_name)
+
+
+def _is_private_or_loopback(hostname: str) -> bool:
+    """Return True if any resolved address for hostname is loopback, private,
+    link-local, or otherwise disallowed. Also returns True if DNS fails."""
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        return True  # can't resolve → treat as unsafe
+    for info in infos:
+        addr_str = info[4][0]
+        try:
+            ip = ipaddress.ip_address(addr_str)
+            if ip.is_loopback or ip.is_private or ip.is_link_local or ip.is_reserved:
+                return True
+        except ValueError:
+            return True  # unparseable address → treat as unsafe
+    return False
+
+
+def _normalize_path(raw_path: str) -> str | None:
+    """Normalize a URL path and reject traversal attempts.
+    Returns the normalized path, or None if it escapes the root."""
+    normalized = posixpath.normpath(raw_path)
+    if normalized.startswith(".."):
+        return None
+    return normalized
 
 
 app = FastAPI()
@@ -101,26 +131,31 @@ async def search(
 @app.get("/image-proxy")
 async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     parsed = urlparse(url)
+
+    # 1. Scheme must be http or https (blocks file://, gopher://, etc.)
     if parsed.scheme not in ("http", "https"):
         raise HTTPException(status_code=422, detail="Only HTTP(S) URLs are allowed")
+
+    # 2. Hostname must be in the server-controlled allowlist
     if parsed.hostname not in ALLOWED_IMAGE_HOSTS:
         raise HTTPException(status_code=403, detail="Host not allowed")
 
-    if ".." in parsed.path:
+    # 3. Resolve DNS and reject loopback / private / link-local addresses
+    if _is_private_or_loopback(parsed.hostname):
+        raise HTTPException(status_code=403, detail="Host resolves to a disallowed address")
+
+    # 4. Normalize path and reject traversal (handles encoded variants after urlparse decodes)
+    safe_path = _normalize_path(parsed.path)
+    if safe_path is None:
         raise HTTPException(status_code=422, detail="Path traversal not allowed")
 
-    # Reconstruct URL from trusted, server-controlled values only:
-    # - trusted_host comes from ALLOWED_IMAGE_HOSTS (a server constant), breaking the taint chain
-    # - urlunparse assembles the final URL; only path+query are taken from user input
+    # 5. Reconstruct URL entirely from server-controlled values — trusted_host comes from
+    #    ALLOWED_IMAGE_HOSTS (a constant), breaking the taint chain
     trusted_host = next(h for h in ALLOWED_IMAGE_HOSTS if h == parsed.hostname)
-    safe_parsed = urlunparse((parsed.scheme, trusted_host, parsed.path, "", parsed.query, ""))
-
-    # Re-validate after normalization in case the parser resolved traversal sequences
-    if ".." in urlparse(safe_parsed).path:
-        raise HTTPException(status_code=422, detail="Path traversal not allowed")
+    safe_url = urlunparse((parsed.scheme, trusted_host, safe_path, "", parsed.query, ""))
 
     try:
-        resp = await _http_client.get(safe_parsed)
+        resp = await _http_client.get(safe_url)
         resp.raise_for_status()
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Failed to fetch image: {exc}") from exc
