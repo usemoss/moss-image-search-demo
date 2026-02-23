@@ -129,10 +129,20 @@ app.get("/image-proxy", async (req, res) => {
     return;
   }
 
-  // Source the hostname from the allowlist constant (not from user-supplied parsed.hostname)
-  // to break the taint chain that CodeQL tracks from req.query.url → fetch()
+  // Reconstruct URL from trusted, server-controlled values only:
+  // - trustedHost comes from ALLOWED_IMAGE_HOSTS (a server constant), breaking the taint chain
+  // - the URL constructor normalizes the result; only pathname+search are taken from user input
   const trustedHost = [...ALLOWED_IMAGE_HOSTS].find((h) => h === parsed.hostname)!;
-  const safeUrl = `${parsed.protocol}//${trustedHost}${parsed.pathname}`;
+  const safeUrl = new URL(
+    parsed.pathname + parsed.search,
+    `${parsed.protocol}//${trustedHost}`
+  );
+
+  // Re-validate after URL normalization in case the constructor resolved traversal sequences
+  if (safeUrl.pathname.includes("..")) {
+    res.status(422).json({ detail: "Path traversal not allowed" });
+    return;
+  }
 
   try {
     const upstream = await fetch(safeUrl, { redirect: "error" });

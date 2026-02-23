@@ -4,7 +4,7 @@ import asyncio
 import os
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import httpx
 from dotenv import load_dotenv
@@ -109,13 +109,18 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     if ".." in parsed.path:
         raise HTTPException(status_code=422, detail="Path traversal not allowed")
 
-    # Source the hostname from the allowlist constant (not from user-supplied parsed.hostname)
-    # to break the taint chain — the outgoing URL is built from data we own, not user input
+    # Reconstruct URL from trusted, server-controlled values only:
+    # - trusted_host comes from ALLOWED_IMAGE_HOSTS (a server constant), breaking the taint chain
+    # - urlunparse assembles the final URL; only path+query are taken from user input
     trusted_host = next(h for h in ALLOWED_IMAGE_HOSTS if h == parsed.hostname)
-    safe_url = f"{parsed.scheme}://{trusted_host}{parsed.path}"
+    safe_parsed = urlunparse((parsed.scheme, trusted_host, parsed.path, "", parsed.query, ""))
+
+    # Re-validate after normalization in case the parser resolved traversal sequences
+    if ".." in urlparse(safe_parsed).path:
+        raise HTTPException(status_code=422, detail="Path traversal not allowed")
 
     try:
-        resp = await _http_client.get(safe_url)
+        resp = await _http_client.get(safe_parsed)
         resp.raise_for_status()
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Failed to fetch image: {exc}") from exc
