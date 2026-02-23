@@ -114,13 +114,24 @@ app.get("/image-proxy", async (req, res) => {
     return;
   }
 
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    res.status(422).json({ detail: "Only HTTP(S) URLs are allowed" });
+    return;
+  }
+
   if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
     res.status(403).json({ detail: "Host not allowed" });
     return;
   }
 
+  // Reconstruct URL from parsed components to prevent parser-confusion attacks
+  // (e.g. https://allowed-host@evil.com/ passing the hostname check)
+  parsed.username = "";
+  parsed.password = "";
+  const safeUrl = parsed.toString();
+
   try {
-    const upstream = await fetch(url, { redirect: "follow" });
+    const upstream = await fetch(safeUrl, { redirect: "error" });
     if (!upstream.ok) {
       res.status(502).json({ detail: `Upstream returned ${upstream.status}` });
       return;

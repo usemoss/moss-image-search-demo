@@ -26,7 +26,7 @@ CORS_ORIGINS = os.getenv(
 TOP_K_DEFAULT = 5
 
 client = MossClient(PROJECT_ID, PROJECT_KEY)
-_http_client = httpx.AsyncClient(follow_redirects=True, timeout=15.0)
+_http_client = httpx.AsyncClient(follow_redirects=False, timeout=15.0)
 
 ALLOWED_IMAGE_HOSTS = {"images.cocodataset.org"}
 
@@ -101,11 +101,17 @@ async def search(
 @app.get("/image-proxy")
 async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=422, detail="Only HTTP(S) URLs are allowed")
     if parsed.hostname not in ALLOWED_IMAGE_HOSTS:
         raise HTTPException(status_code=403, detail="Host not allowed")
 
+    # Reconstruct URL from parsed components to prevent parser-confusion attacks
+    # (e.g. https://allowed-host@evil.com/ passing the hostname check)
+    safe_url = parsed._replace(netloc=parsed.hostname).geturl()
+
     try:
-        resp = await _http_client.get(url)
+        resp = await _http_client.get(safe_url)
         resp.raise_for_status()
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Failed to fetch image: {exc}") from exc
