@@ -589,6 +589,8 @@
   overflow: hidden;
   position: relative;
   width: 100%;
+  padding: 0;
+  text-align: left;
   aspect-ratio: 4 / 3;
   text-decoration: none;
   color: inherit;

@@ -1,4 +1,4 @@
-import { QueryResultDocumentInfo } from "./searchUtils";
+import { QueryResultDocumentInfo, PYTHON_API_BASE } from "./searchUtils";
 
 export interface GalleryItem {
   readonly id: string;
@@ -7,11 +7,9 @@ export interface GalleryItem {
   readonly imageId: string;
 }
 
-const API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "";
-
 function proxyImageUrl(url: string): string {
   if (url.startsWith("http://")) {
-    return `${API_BASE}/image-proxy?url=${encodeURIComponent(url)}`;
+    return `${PYTHON_API_BASE}/image-proxy?url=${encodeURIComponent(url)}`;
   }
   return url;
 }

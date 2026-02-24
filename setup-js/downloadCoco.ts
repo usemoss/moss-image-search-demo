@@ -16,7 +16,7 @@ import * as http from "http";
 import { execSync } from "child_process";
 
 const ANNOTATIONS_URL =
-  "https://images.cocodataset.org/annotations/annotations_trainval2017.zip";
+  "http://images.cocodataset.org/annotations/annotations_trainval2017.zip";
 const ANNOTATIONS_DIR = path.resolve(__dirname, "../annotations");
 const OUTPUT_DIR = path.resolve(__dirname, "..");
 const SEED = 42;

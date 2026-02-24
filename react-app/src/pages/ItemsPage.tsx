@@ -52,6 +52,7 @@ const ImageSearchPage = () => {
     loading: true,
     error: null,
   });
+  const [retryCount, setRetryCount] = useState(0);
   const [topK, setTopK] = useState(5);
   const [topKInput, setTopKInput] = useState("5");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -82,7 +83,7 @@ const ImageSearchPage = () => {
     return () => {
       isCancelled = true;
     };
-  }, [indexState.loaded]);
+  }, [indexState.loaded, retryCount]);
 
   // Auto-run first sample query when index loads
   useEffect(() => {
@@ -184,6 +185,7 @@ const ImageSearchPage = () => {
   const handleRetryInitialization = useCallback(() => {
     if (indexState.loading) return;
     setIndexState({ loaded: false, loading: false, error: null });
+    setRetryCount((c) => c + 1);
   }, [indexState.loading]);
 
   const handleLightboxFindSimilar = useCallback((caption: string) => {
@@ -424,12 +426,11 @@ const MasonryCard = ({ item, onSelect }: { readonly item: GalleryItem; readonly 
   const firstCaption = item.caption.split(" | ")[0] ?? item.caption;
 
   return (
-    <div
+    <button
+      type="button"
       className="masonry-card"
       onClick={() => onSelect(item)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(item); }}
+      aria-label={firstCaption}
       data-testid="image-card"
     >
       <img
@@ -441,6 +442,6 @@ const MasonryCard = ({ item, onSelect }: { readonly item: GalleryItem; readonly 
       <div className="card-overlay">
         <p className="card-overlay-text">{firstCaption}</p>
       </div>
-    </div>
+    </button>
   );
 };

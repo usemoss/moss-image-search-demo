@@ -71,50 +71,45 @@ This generates `coco-data-50k.json` and `coco-data-100k.json` in the project roo
 
 ## 3. Setup - Upload data and create index
 
-Go into either the `setup-js` or `setup-py` folder and follow the instructions.
+All setup scripts read credentials from the **root `.env`** file (created in step 1). Use either the JS or Python tooling — they produce identical indexes.
 
 ### Setup JS
 
 1. Navigate to the `setup-js` folder.
 2. Install Node.js and npm.
-3. Run `npm install` to install dependencies. `npm install -g npx` to install npx globally if not already installed.
-4. Create a `.env` file in the `setup-js` folder (see `.env.example`) and add your `MOSS_PROJECT_ID`, `MOSS_PROJECT_KEY`, `MOSS_INDEX_NAME`, and `MOSS_INDEX_TIER` values.
-5. `npx tsx createIndex.ts` to create the index for the configured tier.
-6. `npx tsx createAllIndexes.ts` to create indexes for all tiers.
-7. `npx tsx query.ts` to load the index and run sample queries.
+3. Run `npm install` to install dependencies.
+4. `npx tsx createIndex.ts` to create the index for the tier set in the root `.env` (`MOSS_INDEX_TIER`, default `1k`).
+5. `npx tsx createAllIndexes.ts` to create indexes for all tiers.
+6. `npx tsx query.ts` to load the index and run sample queries.
 
 ### Setup Python
 
 1. Navigate to the `setup-py` folder.
-2. Install Python 3.9+ and uv.
-3. (Optional) Create and activate a virtual environment:
+2. Install Python 3.10+ and uv.
+3. Create and activate a virtual environment:
    - `uv venv`
    - On Windows: `.\venv\Scripts\activate`
    - On macOS/Linux: `source .venv/bin/activate`
 4. Run `uv sync` to install dependencies.
-5. Create a `.env` file in the `setup-py` folder (see `.env.example`) and add your `MOSS_PROJECT_ID`, `MOSS_PROJECT_KEY`, `MOSS_INDEX_NAME`, and `MOSS_INDEX_TIER` values.
-6. Run `python create_index.py` to create the index for the configured tier.
-7. Run `python create_all_indexes.py` to create indexes for all tiers.
-8. Run `python query.py` to load the index and run sample queries.
+5. Run `python create_index.py` to create the index for the tier set in the root `.env` (`MOSS_INDEX_TIER`, default `1k`).
+6. Run `python create_all_indexes.py` to create indexes for all tiers.
+7. Run `python query.py` to load the index and run sample queries.
 
 ## 4. Backend
 
-A FastAPI backend is included in the `backend-py` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client.
+A FastAPI backend is included in the `backend-py` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client. It reads credentials from the **root `.env`** file.
 
 1. Navigate to the `backend-py` folder.
-2. Install Python 3.9+ and uv.
+2. Install Python 3.10+ and uv.
 3. `uv venv && source .venv/bin/activate`
 4. `uv sync` to install dependencies.
-5. Create a `.env` file (see `.env.example`) and add your `MOSS_PROJECT_ID`, `MOSS_PROJECT_KEY`, and `MOSS_INDEX_NAME` values.
-6. Run `uvicorn main:app --reload` to start the server.
+5. Run `uvicorn main:app --reload` to start the server.
 
 ## 5. React App powered by Moss
 
-A sample React app is included in the `react-app` folder that demonstrates how to integrate Moss for semantic search in the image search application.
+A sample React app is included in the `react-app` folder that demonstrates how to integrate Moss for semantic search. It reads `MOSS_PYTHON_API_URL` from the **root `.env`** file via Vite's env loading.
 
 1. Navigate to the `react-app` folder.
 2. Install Node.js and npm.
 3. Run `npm install` to install dependencies.
-4. Create a `.env` file in the `react-app` folder and add your `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` values.
-   - Prefix environment variables with `VITE_`.
-5. Run `npm run dev` to start the development server.
+4. Run `npm run dev` to start the development server.

@@ -101,7 +101,7 @@ async def create_index_for_tier(tier: str) -> None:
             "Skipping creation."
         )
         return
-    except Exception:
+    except RuntimeError:
         pass  # Index doesn't exist, proceed with creation
 
     print(f"Creating index '{index_name}' with {len(documents)} documents using {model_id}...")

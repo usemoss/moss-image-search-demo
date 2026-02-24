@@ -65,7 +65,7 @@ async def load_and_query_sample() -> None:
 
         print("All queries completed successfully!")
 
-    except Exception as error:
+    except RuntimeError as error:
         print(f"Error: {error}")
         print("Check your credentials and index configuration.")
 

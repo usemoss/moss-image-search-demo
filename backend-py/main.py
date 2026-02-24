@@ -5,8 +5,10 @@ import ipaddress
 import os
 import posixpath
 import socket
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse, urlunparse
 
 import httpx
@@ -22,14 +24,15 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 PROJECT_ID = os.getenv("MOSS_PROJECT_ID", "")
 PROJECT_KEY = os.getenv("MOSS_PROJECT_KEY", "")
 BASE_INDEX_NAME = os.getenv("MOSS_INDEX_NAME", "coco-data")
-CORS_ORIGINS = os.getenv(
-    "MOSS_CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:4173",
-).split(",")
+CORS_ORIGINS = [
+    origin for origin in
+    (o.strip() for o in os.getenv("MOSS_CORS_ORIGINS", "http://localhost:5173,http://localhost:4173").split(","))
+    if origin
+]
 TOP_K_DEFAULT = 5
 
 client = MossClient(PROJECT_ID, PROJECT_KEY)
-_http_client = httpx.AsyncClient(follow_redirects=False, timeout=15.0)
+_http_client: httpx.AsyncClient | None = None
 
 ALLOWED_IMAGE_HOSTS = {"images.cocodataset.org"}
 
@@ -79,7 +82,16 @@ def _normalize_path(raw_path: str) -> str | None:
     return normalized
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    global _http_client
+    _http_client = httpx.AsyncClient(follow_redirects=False, timeout=15.0)
+    yield
+    await _http_client.aclose()
+    _http_client = None
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -97,19 +109,19 @@ async def health() -> dict[str, str]:
 @app.get("/search")
 async def search(
     query: str = Query(..., min_length=1),
-    tier: str = Query("1k"),
+    tier: Literal["1k", "10k", "50k", "100k"] = Query("1k"),
     top_k: int = Query(TOP_K_DEFAULT, ge=1, le=50),
 ) -> dict[str, Any]:
     index_name = _get_index_name(tier)
 
     try:
         await _ensure_index_loaded(index_name)
-    except Exception as exc:
+    except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=f"Failed to load index: {exc}") from exc
 
     try:
         result = await client.query(index_name, query.lower(), QueryOptions(top_k=top_k))
-    except Exception as exc:
+    except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=f"Query failed: {exc}") from exc
 
     docs = [
@@ -153,6 +165,9 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     #    ALLOWED_IMAGE_HOSTS (a constant), breaking the taint chain
     trusted_host = next(h for h in ALLOWED_IMAGE_HOSTS if h == parsed.hostname)
     safe_url = urlunparse((parsed.scheme, trusted_host, safe_path, "", parsed.query, ""))
+
+    if _http_client is None:
+        raise HTTPException(status_code=503, detail="HTTP client not initialized")
 
     try:
         resp = await _http_client.get(safe_url)

@@ -25,7 +25,7 @@ async def create_all_indexes() -> None:
         print(f"\n--- Tier: {tier} ---")
         try:
             await create_index_for_tier(tier)
-        except Exception as error:
+        except (RuntimeError, FileNotFoundError, ValueError, EnvironmentError) as error:
             print(f"Failed to create index for tier {tier}: {error}")
 
     print("\nAll indexes created.")

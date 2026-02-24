@@ -76,8 +76,8 @@ const Lightbox = ({ item, items, onClose, onNavigate, onFindSimilar }: LightboxP
         </div>
         <div className="lightbox-info">
           <div className="lightbox-captions">
-            {captions.map((cap) => (
-              <p key={cap} className="lightbox-caption">{cap.trim()}</p>
+            {captions.map((cap, i) => (
+              <p key={`${item.id}-${i}`} className="lightbox-caption">{cap.trim()}</p>
             ))}
           </div>
           <p className="lightbox-id">ID: {item.imageId}</p>

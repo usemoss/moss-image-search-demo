@@ -31,7 +31,7 @@ export const getCurrentTier = (): string => currentTier;
 export const getCurrentTierInfo = (): TierInfo =>
     TIERS.find((t) => t.value === currentTier) ?? TIERS[0];
 
-const PYTHON_API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "http://localhost:8000";
+export const PYTHON_API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "http://localhost:8000";
 
 export const searchImagesViaPythonApi = async (
     term: string,
