@@ -6,14 +6,20 @@
 }
 
 .back-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 24px;
-  color: #0066cc;
+  color: var(--accent-green);
   text-decoration: none;
   font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s, opacity 0.2s;
 }
 
 .back-link:hover {
+  color: var(--accent-green);
+  opacity: 0.8;
   text-decoration: underline;
 }
 
@@ -23,9 +29,9 @@
 }
 
 .image-detail {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -36,59 +42,43 @@
 
 .image-detail-asset {
   width: 100%;
-  max-width: 640px;
-  aspect-ratio: 4 / 3;
+  max-width: 720px;
   height: auto;
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  object-fit: contain;
 }
 
 .image-status {
   font-size: 1rem;
-  color: #555;
+  color: var(--text-muted);
   margin: 0;
+}
+
+.image-caption-text {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 0;
 }
 
 .image-detail-meta {
   width: 100%;
+  max-width: 640px;
 }
 
-.image-detail-meta .image-photographer {
-  font-size: 0.95rem;
-  color: #444;
+.image-detail-meta .image-id-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--text-muted);
   margin: 0;
-}
-
-.image-detail-meta h2 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: #222;
-}
-
-.image-detail-meta dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 8px 16px;
-}
-
-.image-detail-meta dt {
-  font-weight: 600;
-  color: #555;
-}
-
-.image-detail-meta dd {
-  margin: 0;
-  color: #333;
 }
 
 @media (max-width: 640px) {
   .image-detail {
-    padding: 20px;
-  }
-
-  .image-detail-asset {
-    max-height: 320px;
+    padding: 16px;
   }
 }

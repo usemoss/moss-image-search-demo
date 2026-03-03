@@ -1,93 +1,74 @@
-import { MossClient, SearchResult, QueryResultDocumentInfo } from "@inferedge/moss";
+export interface QueryResultDocumentInfo {
+    readonly id: string;
+    readonly text: string;
+    readonly metadata: Record<string, string>;
+}
 
-export type SearchImagesResponse = {
-    results: QueryResultDocumentInfo[];
-    timeTakenInMs: number;
-    status: "fulfilled" | "rejected";
-    errorMessage?: string;
-};
+interface SearchImagesResponse {
+    readonly results: QueryResultDocumentInfo[];
+    readonly timeTakenInMs: number;
+    readonly status: "fulfilled" | "rejected";
+    readonly errorMessage?: string;
+}
 
-// Shared Moss client configured with the image index credentials.
-const mossClient = new MossClient(
-    import.meta.env.VITE_MOSS_PROJECT_ID,
-    import.meta.env.VITE_MOSS_PROJECT_KEY
-);
-const indexName = import.meta.env.VITE_MOSS_INDEX_NAME;
+export interface TierInfo {
+    readonly value: string;
+    readonly label: string;
+    readonly docCount: string;
+}
 
-let isIndexLoaded = false;
-let indexLoadPromise: Promise<void> | null = null;
-let indexLoadError: Error | null = null;
+export const TIERS: readonly TierInfo[] = [
+    { value: "1k", label: "1K images", docCount: "1,000" },
+    { value: "10k", label: "10K images", docCount: "10,000" },
+    { value: "50k", label: "50K images", docCount: "50,000" },
+    { value: "100k", label: "100K images", docCount: "100,000" },
+];
 
-/**
- * Loads the Moss index into the client. Should run once at app start.
- */
-export const initializeSearchIndex = (): Promise<void> => {
-    if (isIndexLoaded) {
-        return Promise.resolve();
-    }
+const currentTier = "1k";
 
-    if (!indexLoadPromise) {
-        indexLoadError = null;
-        indexLoadPromise = mossClient
-            .loadIndex(indexName)
-            .then(() => {
-                isIndexLoaded = true;
-                indexLoadError = null;
-            })
-            .catch((error) => {
-                isIndexLoaded = false;
-                indexLoadError = error instanceof Error ? error : new Error(String(error));
-                throw indexLoadError;
-            })
-            .finally(() => {
-                indexLoadPromise = null;
-            });
-    }
+export const getCurrentTier = (): string => currentTier;
 
-    return indexLoadPromise;
-};
+export const getCurrentTierInfo = (): TierInfo =>
+    TIERS.find((t) => t.value === currentTier) ?? TIERS[0];
 
-export const isSearchIndexLoaded = (): boolean => isIndexLoaded;
+export const PYTHON_API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "http://localhost:8000";
+export const API_PREFIX = `${PYTHON_API_BASE}/demo/image-search`;
 
-export const getSearchIndexLoadError = (): Error | null => indexLoadError;
-
-/**
- * Executes a semantic search against the image index and returns
- * the Moss documents decorated with image metadata.
- * Queries are executed sequentially, and timing comes from the first query's timeTakenInMs.
- */
-export const searchImages = async (term: string): Promise<SearchImagesResponse> => {
-    await initializeSearchIndex();
-
+export const searchImagesViaPythonApi = async (
+    term: string,
+    tier: string,
+    topK = 5
+): Promise<SearchImagesResponse> => {
     const trimmedTerm = term.trim();
     if (!trimmedTerm) {
         return { results: [], timeTakenInMs: 0, status: "fulfilled" };
     }
 
-    const queryTerm = trimmedTerm.toLowerCase();
-
     try {
-        const result: SearchResult = await mossClient.query(indexName, queryTerm);
-        const docs: QueryResultDocumentInfo[] = (result.docs ?? []).map((doc) => ({
+        const url = `${API_PREFIX}/search?query=${encodeURIComponent(trimmedTerm)}&tier=${encodeURIComponent(tier)}&top_k=${topK}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`HTTP ${response.status}: ${text}`);
+        }
+        const data = (await response.json()) as { docs: QueryResultDocumentInfo[]; timeTakenInMs: number };
+        const docs: QueryResultDocumentInfo[] = (data.docs ?? []).map((doc) => ({
             ...doc,
             metadata: doc.metadata ?? ({} as Record<string, string>),
         }));
-        const durationMs = result.timeTakenInMs ?? 0;
-
-        return {
-            results: docs,
-            timeTakenInMs: durationMs,
-            status: "fulfilled",
-        };
+        return { results: docs, timeTakenInMs: data.timeTakenInMs ?? 0, status: "fulfilled" };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error("Image search failed:", errorMessage);
+        console.error("Python API search failed:", errorMessage);
+        return { results: [], timeTakenInMs: 0, status: "rejected", errorMessage };
+    }
+};
 
-        return {
-            results: [],
-            timeTakenInMs: 0,
-            status: "rejected",
-            errorMessage,
-        };
+export const checkPythonApiHealth = async (): Promise<boolean> => {
+    try {
+        const response = await fetch(`${API_PREFIX}/health`);
+        return response.ok;
+    } catch {
+        return false;
     }
 };
