@@ -232,8 +232,8 @@ const ImageSearchPage = () => {
               data-testid="search-input"
             />
             <div className="powered-by">
-              <span className="moss-dot" />
-              <span>MOSS</span>
+              <img src="/images/InferEdgeLogo_Dark_Icon.png" alt="Moss" className="powered-by-logo" />
+              <span>Powered by MOSS</span>
             </div>
           </div>
 

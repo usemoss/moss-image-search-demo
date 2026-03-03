@@ -184,12 +184,10 @@
   transition: transform 0.2s, border-color 0.2s;
 }
 
-.powered-by .moss-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-green);
-  display: inline-block;
+.powered-by-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .powered-by:hover {
