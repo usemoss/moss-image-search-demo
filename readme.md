@@ -97,13 +97,26 @@ All setup scripts read credentials from the **root `.env`** file (created in ste
 
 ## 4. Backend
 
-A FastAPI backend is included in the `backend-py` folder. It provides a `/search` endpoint that proxies queries to Moss, keeping your API keys off the client. It reads credentials from the **root `.env`** file.
+A FastAPI backend is included in the `backend-py` folder. It proxies queries to Moss, keeping your API keys off the client. It reads credentials from the **root `.env`** file.
 
+All routes are mounted under the `/demo/image-search` prefix:
+- `GET /demo/image-search/search` — semantic search endpoint
+- `GET /demo/image-search/health` — health check
+- `GET /demo/image-search/image-proxy` — secure image proxy (rewrites `http://` COCO URLs to pass through the backend)
+
+**Development server:**
 1. Navigate to the `backend-py` folder.
 2. Install Python 3.10+ and uv.
 3. `uv venv && source .venv/bin/activate`
 4. `uv sync` to install dependencies.
 5. Run `uvicorn main:app --reload` to start the server.
+
+**Docker:**
+```bash
+cd backend-py
+docker build -t moss-backend .
+docker run -p 8080:8080 --env-file ../.env moss-backend
+```
 
 ## 5. React App powered by Moss
 
