@@ -309,7 +309,7 @@ const ImageSearchPage = () => {
         <div className={`speed-badge-hero ${getSpeedBadgeClass(queryMetrics.timeTakenInMs)}`}>
           <span className="speed-badge-dot" />
           <span className="speed-badge-value">{Math.round(queryMetrics.timeTakenInMs)}ms</span>
-          <span className="speed-badge-label">query time</span>
+          <span className="speed-badge-label">server-side query time</span>
         </div>
       ) : indexState.loaded && !queryMetrics ? (
         <div className="speed-badge-hero speed-badge--green">
@@ -399,7 +399,7 @@ const ImageSearchPage = () => {
 
       {/* Footer */}
       <footer className="site-footer">
-        <p>&copy; {new Date().getFullYear()} <a href="https://usemoss.com" target="_blank" rel="noopener noreferrer">Moss</a>. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} <a href="https://www.moss.dev/" target="_blank" rel="noopener noreferrer">Moss</a>. All rights reserved.</p>
       </footer>
 
       {/* Lightbox */}
