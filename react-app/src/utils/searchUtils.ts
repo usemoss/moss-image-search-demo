@@ -32,6 +32,7 @@ export const getCurrentTierInfo = (): TierInfo =>
     TIERS.find((t) => t.value === currentTier) ?? TIERS[0];
 
 export const PYTHON_API_BASE = (import.meta.env.MOSS_PYTHON_API_URL as string | undefined) || "http://localhost:8000";
+export const API_PREFIX = `${PYTHON_API_BASE}/demo/image-search`;
 
 export const searchImagesViaPythonApi = async (
     term: string,
@@ -44,7 +45,7 @@ export const searchImagesViaPythonApi = async (
     }
 
     try {
-        const url = `${PYTHON_API_BASE}/search?query=${encodeURIComponent(trimmedTerm)}&tier=${encodeURIComponent(tier)}&top_k=${topK}`;
+        const url = `${API_PREFIX}/search?query=${encodeURIComponent(trimmedTerm)}&tier=${encodeURIComponent(tier)}&top_k=${topK}`;
         const response = await fetch(url);
         if (!response.ok) {
             const text = await response.text();
@@ -65,7 +66,7 @@ export const searchImagesViaPythonApi = async (
 
 export const checkPythonApiHealth = async (): Promise<boolean> => {
     try {
-        const response = await fetch(`${PYTHON_API_BASE}/health`);
+        const response = await fetch(`${API_PREFIX}/health`);
         return response.ok;
     } catch {
         return false;

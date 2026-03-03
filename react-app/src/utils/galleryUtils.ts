@@ -1,4 +1,4 @@
-import { QueryResultDocumentInfo, PYTHON_API_BASE } from "./searchUtils";
+import { QueryResultDocumentInfo, API_PREFIX } from "./searchUtils";
 
 export interface GalleryItem {
   readonly id: string;
@@ -9,7 +9,7 @@ export interface GalleryItem {
 
 function proxyImageUrl(url: string): string {
   if (url.startsWith("http://")) {
-    return `${PYTHON_API_BASE}/image-proxy?url=${encodeURIComponent(url)}`;
+    return `${API_PREFIX}/image-proxy?url=${encodeURIComponent(url)}`;
   }
   return url;
 }

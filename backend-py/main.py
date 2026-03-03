@@ -5,15 +5,13 @@ import ipaddress
 import os
 import posixpath
 import socket
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from inferedge_moss import MossClient
@@ -24,15 +22,14 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 PROJECT_ID = os.getenv("MOSS_PROJECT_ID", "")
 PROJECT_KEY = os.getenv("MOSS_PROJECT_KEY", "")
 BASE_INDEX_NAME = os.getenv("MOSS_INDEX_NAME", "coco-data")
-CORS_ORIGINS = [
-    origin for origin in
-    (o.strip() for o in os.getenv("MOSS_CORS_ORIGINS", "http://localhost:5173,http://localhost:4173").split(","))
-    if origin
-]
+CORS_ORIGINS = os.getenv(
+    "MOSS_CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:4173",
+).split(",")
 TOP_K_DEFAULT = 5
 
 client = MossClient(PROJECT_ID, PROJECT_KEY)
-_http_client: httpx.AsyncClient | None = None
+_http_client = httpx.AsyncClient(follow_redirects=False, timeout=15.0)
 
 ALLOWED_IMAGE_HOSTS = {"images.cocodataset.org"}
 
@@ -82,16 +79,7 @@ def _normalize_path(raw_path: str) -> str | None:
     return normalized
 
 
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    global _http_client
-    _http_client = httpx.AsyncClient(follow_redirects=False, timeout=15.0)
-    yield
-    await _http_client.aclose()
-    _http_client = None
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -100,28 +88,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+router = APIRouter(prefix="/demo/image-search")
 
-@app.get("/health")
+
+@router.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/search")
+@router.get("/search")
 async def search(
     query: str = Query(..., min_length=1),
-    tier: Literal["1k", "10k", "50k", "100k"] = Query("1k"),
+    tier: str = Query("1k"),
     top_k: int = Query(TOP_K_DEFAULT, ge=1, le=50),
 ) -> dict[str, Any]:
     index_name = _get_index_name(tier)
 
     try:
         await _ensure_index_loaded(index_name)
-    except RuntimeError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Failed to load index: {exc}") from exc
 
     try:
         result = await client.query(index_name, query.lower(), QueryOptions(top_k=top_k))
-    except RuntimeError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Query failed: {exc}") from exc
 
     docs = [
@@ -140,7 +130,7 @@ async def search(
     }
 
 
-@app.get("/image-proxy")
+@router.get("/image-proxy")
 async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     parsed = urlparse(url)
 
@@ -166,9 +156,6 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
     trusted_host = next(h for h in ALLOWED_IMAGE_HOSTS if h == parsed.hostname)
     safe_url = urlunparse((parsed.scheme, trusted_host, safe_path, "", parsed.query, ""))
 
-    if _http_client is None:
-        raise HTTPException(status_code=503, detail="HTTP client not initialized")
-
     try:
         resp = await _http_client.get(safe_url)
         resp.raise_for_status()
@@ -181,6 +168,9 @@ async def image_proxy(url: str = Query(..., min_length=1)) -> Response:
         media_type=content_type,
         headers={"Cache-Control": "public, max-age=86400"},
     )
+
+
+app.include_router(router)
 
 
 if __name__ == "__main__":
